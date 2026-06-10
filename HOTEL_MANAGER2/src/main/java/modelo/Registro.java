@@ -9,18 +9,18 @@ package modelo;
  * @author deadpooy
  */
 
-import java.sql.Time;
-import java.util.Date;
+import java.sql.Time; // Clase SQL para capturar únicamente horas, minutos y segundos
+import java.util.Date; // Clase estándar para fechas generales
 
 public class Registro {
-    private int idRegistro;
-    private int idCliente;
-    private int idReservacion;
-    private int idHabitacion;
-    private Time horaReg;
-    private Date fechaReg;
+    private int idRegistro; // Identificador correlativo numérico
+    private int idCliente; // Cliente que genera el evento de entrada
+    private int idReservacion; // Ticket de reservación vinculado
+    private int idHabitacion; // Cuarto físico involucrado en el check-in
+    private Time horaReg; // Marca temporal de hora exacta
+    private Date fechaReg; // Marca de fecha del día
 
-    public Registro(int idRegistro, int idCliente, int idReservacion, int idHabitacion, Time horaReg, Date fechaReg) {
+    public Registro(int idRegistro, int idCliente, int idReservacion, int idHabitacion, Time horaReg, Date fechaReg) { // Constructor para instanciar registros rápidos
         this.idRegistro = idRegistro;
         this.idCliente = idCliente;
         this.idReservacion = idReservacion;
@@ -29,6 +29,8 @@ public class Registro {
         this.fechaReg = fechaReg;
     }
 
+    // Getters y Setters de control de flujo
+    public int getIdTarget() { return idRegistro; }
     public int getIdRegistro() { return idRegistro; }
     public void setIdRegistro(int idRegistro) { this.idRegistro = idRegistro; }
     public int getIdCliente() { return idCliente; }

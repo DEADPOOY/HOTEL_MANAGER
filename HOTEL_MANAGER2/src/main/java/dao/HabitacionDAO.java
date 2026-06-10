@@ -8,6 +8,7 @@ package dao;
  *
  * @author deadpooy
  */
+
 import conexion.Conexion;
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import modelo.Habitacion;
 
 public class HabitacionDAO {
 
-    public boolean insertar(Habitacion h) {
+    public boolean insertar(Habitacion h) { // Registra una nueva unidad habitacional en el sistema del hotel
         String sql = "INSERT INTO habitacion (num_habitacion, tipo, piso, precio_hora, num_capacidad, estado) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setString(1, h.getNumHabitacion());
@@ -24,7 +25,7 @@ public class HabitacionDAO {
             ps.setInt(3, h.getPiso());
             ps.setDouble(4, h.getPrecioHora());
             ps.setInt(5, h.getNumCapacidad());
-            ps.setString(6, h.getEstado());
+            ps.setString(6, h.getEstado()); // Estado inicial por defecto de fábrica
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -32,7 +33,7 @@ public class HabitacionDAO {
         }
     }
 
-    public boolean actualizar(Habitacion h) {
+    public boolean actualizar(Habitacion h) { // Actualiza la configuración interna y operacional de los cuartos
         String sql = "UPDATE habitacion SET tipo = ?, piso = ?, precio_hora = ?, num_capacidad = ?, estado = ? WHERE id_habitacion = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setString(1, h.getTipo());
@@ -48,7 +49,7 @@ public class HabitacionDAO {
         }
     }
 
-    public Habitacion obtenerPorId(int id) {
+    public Habitacion obtenerPorId(int id) { // Busca los parámetros de una sola habitación por su ID primario
         String sql = "SELECT * FROM habitacion WHERE id_habitacion = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -65,7 +66,7 @@ public class HabitacionDAO {
         return null;
     }
 
-    public List<Habitacion> obtenerTodos() {
+    public List<Habitacion> obtenerTodos() { // Trae todo el inventario de cuartos físicos para el panel visual de cuadrícula
         List<Habitacion> lista = new ArrayList<>();
         String sql = "SELECT * FROM habitacion";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql);
@@ -81,7 +82,7 @@ public class HabitacionDAO {
         return lista;
     }
 
-    public List<Habitacion> obtenerPorEstado(String estado) {
+    public List<Habitacion> obtenerPorEstado(String estado) { // Filtra las habitaciones por estado (útil para listar las disponibles en check-ins)
         List<Habitacion> lista = new ArrayList<>();
         String sql = "SELECT * FROM habitacion WHERE estado = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
@@ -99,7 +100,7 @@ public class HabitacionDAO {
         return lista;
     }
 
-    public boolean cambiarEstado(int id, String estado) {
+    public boolean cambiarEstado(int id, String estado) { // Cambia el estado de una habitación rápidamente (Libre, Ocupada, Limpieza)
         String sql = "UPDATE habitacion SET estado = ? WHERE id_habitacion = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setString(1, estado);

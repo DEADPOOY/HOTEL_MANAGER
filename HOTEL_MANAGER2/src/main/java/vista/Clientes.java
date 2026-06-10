@@ -48,28 +48,28 @@ public class Clientes extends JFrame {
         panelAcciones.add(btnNuevo); panelAcciones.add(btnEditar); panelAcciones.add(btnDetalle); panelAcciones.add(btnCerrar);
         add(panelAcciones, BorderLayout.SOUTH);
 
-        llenarTabla();
+        llenarTabla(); // Descarga la lista completa de huéspedes al iniciar la pantalla
 
         btnCerrar.addActionListener(e -> this.dispose());
         btnNuevo.addActionListener(e -> new CrearCliente(this).setVisible(true));
         
-        btnEditar.addActionListener(e -> {
+        btnEditar.addActionListener(e -> { // Abre el diálogo de edición para el cliente seleccionado en la tabla
             int fila = tablaClientes.getSelectedRow();
             if (fila == -1) return;
-            int id = (int) modeloTabla.getValueAt(fila, 0);
-            Cliente c = clienteDAO.obtenerPorId(id);
-            if (c != null) new ModificarCliente(this, c).setVisible(true);
+            int id = (int) modeloTabla.getValueAt(fila, 0); // Extrae el ID del cliente seleccionado de la columna cero
+            Cliente c = clienteDAO.obtenerPorId(id); // Busca los datos del cliente en la base de datos
+            if (c != null) new ModificarCliente(this, c).setVisible(true); // Abre la ventana de edición enviándole la instancia del cliente cargado
         });
 
-        btnDetalle.addActionListener(e -> {
+        btnDetalle.addActionListener(e -> { // Abre el historial de rentas del cliente seleccionado en la tabla
             int fila = tablaClientes.getSelectedRow();
             if (fila == -1) return;
             int id = (int) modeloTabla.getValueAt(fila, 0);
-            new DetalleCliente(id).setVisible(true);
+            new DetalleCliente(id).setVisible(true); // Abre la ventana de historial enviándole el ID del cliente seleccionado
         });
     }
 
-    public void llenarTabla() {
+    public void llenarTabla() { // Limpia y actualiza la lista de clientes mostrada en la tabla desde MySQL
         modeloTabla.setRowCount(0);
         List<Cliente> lista = clienteDAO.obtenerTodos();
         for (Cliente c : lista) {

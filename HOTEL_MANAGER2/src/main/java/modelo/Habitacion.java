@@ -8,16 +8,17 @@ package modelo;
  *
  * @author deadpooy
  */
-public class Habitacion {
-    private int idHabitacion;
-    private String numHabitacion;
-    private String tipo;
-    private int piso;
-    private double precioHora;
-    private int numCapacidad;
-    private String estado;
 
-    public Habitacion(int idHabitacion, String numHabitacion, String tipo, int piso, double precioHora, int numCapacidad, String estado) {
+public class Habitacion {
+    private int idHabitacion; // ID primario de la celda de datos
+    private String numHabitacion; // Texto del número del cuarto
+    private String tipo; // Categoría (Individual, Doble, Triple)
+    private int piso; // Planta física donde se ubica
+    private double precioHora; // Costo por unidad de tiempo transcurrido
+    private int numCapacidad; // Límite de personas físicas simultáneas
+    private String estado; // Estado actual (Libre, Ocupada, Limpieza)
+
+    public Habitacion(int idHabitacion, String numHabitacion, String tipo, int piso, double precioHora, int numCapacidad, String estado) { // Constructor completo
         this.idHabitacion = idHabitacion;
         this.numHabitacion = numHabitacion;
         this.tipo = tipo;
@@ -27,6 +28,7 @@ public class Habitacion {
         this.estado = estado;
     }
 
+    // Getters y Setters para operaciones lógicas del sistema
     public int getIdHabitacion() { return idHabitacion; }
     public void setIdHabitacion(int idHabitacion) { this.idHabitacion = idHabitacion; }
     public String getNumHabitacion() { return numHabitacion; }

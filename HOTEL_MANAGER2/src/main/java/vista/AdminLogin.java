@@ -26,7 +26,7 @@ public class AdminLogin extends JFrame {
         
         setTitle("Acceso Administrador");
         setSize(350, 220);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Si se cierra de la X superior, solo se esconde sin matar el programa
         setLocationRelativeTo(null);
         setLayout(new GridLayout(4, 2, 10, 10));
 
@@ -48,12 +48,12 @@ public class AdminLogin extends JFrame {
         add(lblPass);   add(txtPass);
         add(btnAcceder); add(btnRegresar);
 
-        btnRegresar.addActionListener(e -> {
-            new PantallaInicio().setVisible(true);
-            dispose();
+        btnRegresar.addActionListener(e -> { // Acción de retorno
+            new PantallaInicio().setVisible(true); // Abre de nuevo el menú raíz del hotel
+            dispose(); // Destruye el formulario actual
         });
 
-        btnAcceder.addActionListener(e -> {
+        btnAcceder.addActionListener(e -> { // Acción de acceso estricto administrativo
             String pass = new String(txtPass.getPassword());
             
             if (Validador.textoVacio(pass)) {
@@ -61,13 +61,13 @@ public class AdminLogin extends JFrame {
                 return;
             }
 
-            Usuario u = usuarioDAO.loginAdmin(pass);
+            Usuario u = usuarioDAO.loginAdmin(pass); // Consulta en base de datos si la clave coincide con un Administrador
             if (u != null) {
-                Sesion.iniciar(u);
-                new ControlUsuarios().setVisible(true);
-                dispose();
+                Sesion.iniciar(u); // Inicializa sesión del administrador de forma global
+                new ControlUsuarios().setVisible(true); // Abre la sección crítica de personal y cuartos
+                dispose(); // Cierra el login secundario
             } else {
-                JOptionPane.showMessageDialog(this, "Contraseña de administrador incorrecta.");
+                JOptionPane.showMessageDialog(this, "Contraseña de administrador incorrecta."); // Bloqueo de seguridad
             }
         });
     }

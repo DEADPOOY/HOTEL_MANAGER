@@ -16,13 +16,13 @@ import javax.swing.*;
 import modelo.Habitacion;
 
 public class ModificarHabitacion extends JDialog {
-    private JComboBox<String> cbHabitaciones;
+    private JComboBox<String> cbHabitaciones; // Menú desplegable de habitaciones creadas
     private JComboBox<String> cbTipo, cbEstado;
     private JTextField txtPrecio;
     private JSpinner spPiso, spCapacidad;
     private JButton btnGuardar, btnCancelar;
     private HabitacionDAO habitacionDAO;
-    private List<Habitacion> listaHabitaciones;
+    private List<Habitacion> listaHabitaciones; // Caché local para mapear la selección del menú desplegable con los objetos Java
     private Habitaciones padre;
 
     public ModificarHabitacion(Habitaciones parent) {
@@ -34,9 +34,9 @@ public class ModificarHabitacion extends JDialog {
         setLayout(new GridLayout(7, 2, 10, 10));
 
         cbHabitaciones = new JComboBox<>();
-        listaHabitaciones = habitacionDAO.obtenerTodos();
+        listaHabitaciones = habitacionDAO.obtenerTodos(); // Descarga todo el inventario de cuartos para alimentar el selector
         for (Habitacion h : listaHabitaciones) {
-            cbHabitaciones.addItem(h.getNumHabitacion());
+            cbHabitaciones.addItem(h.getNumHabitacion()); // Añade solo los números de cuarto como opciones en el menú desplegable
         }
 
         cbTipo = new JComboBox<>(new String[]{"Individual", "Doble", "Triple"});
@@ -61,36 +61,36 @@ public class ModificarHabitacion extends JDialog {
 
         add(btnGuardar); add(btnCancelar);
 
-        cbHabitaciones.addActionListener(e -> actualizarCamposCargados());
-        if (!listaHabitaciones.isEmpty()) actualizarCamposCargados();
+        cbHabitaciones.addActionListener(e -> actualizarCamposCargados()); // Evento de cambio de opción: rellena los campos automáticamente al cambiar de cuarto en la lista
+        if (!listaHabitaciones.isEmpty()) actualizarCamposCargados(); // Carga la información del primer cuarto de la lista de forma automática al abrir la pantalla
 
         btnCancelar.addActionListener(e -> this.dispose());
-        btnGuardar.addActionListener(e -> {
-            int index = cbHabitaciones.getSelectedIndex();
+        btnGuardar.addActionListener(e -> { // Procesa los cambios en caliente de la habitación
+            int index = cbHabitaciones.getSelectedIndex(); // Recupera la opción seleccionada (coincide con el índice de la lista en memoria)
             if (index == -1) return;
             try {
-                Habitacion h = listaHabitaciones.get(index);
+                Habitacion h = listaHabitaciones.get(index); // Extrae la instancia mapeada del cuarto
                 h.setTipo(cbTipo.getSelectedItem().toString());
                 h.setEstado(cbEstado.getSelectedItem().toString());
-                h.setPrecioHora(Double.parseDouble(txtPrecio.getText()));
+                h.setPrecioHora(Double.parseDouble(txtPrecio.getText().trim()));
                 h.setPiso((int) spPiso.getValue());
                 h.setNumCapacidad((int) spCapacidad.getValue());
 
-                if (habitacionDAO.actualizar(h)) {
-                    parent.cargarHabitaciones();
-                    this.dispose();
+                if (habitacionDAO.actualizar(h)) { // Manda la actualización a MySQL
+                    parent.cargarHabitaciones(); // Refresca el panel visual principal del hotel de fondo
+                    this.dispose(); // Cierra el cuadro
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Verifique los datos.");
+                JOptionPane.showMessageDialog(this, "Verifique los datos de costo e ingresos.");
             }
         });
     }
 
-    private void actualizarCamposCargados() {
+    private void actualizarCamposCargados() { // Carga la información del cuarto seleccionado en los campos correspondientes
         int index = cbHabitaciones.getSelectedIndex();
         if (index != -1) {
-            Habitacion h = listaHabitaciones.get(index);
-            cbTipo.setSelectedItem(h.getTipo());
+            Habitacion h = listaHabitaciones.get(index); // Obtiene el cuarto seleccionado de la lista en memoria
+            cbTipo.setSelectedItem(h.getTipo()); // Rellena el combo con la opción guardada
             cbEstado.setSelectedItem(h.getEstado());
             txtPrecio.setText(String.valueOf(h.getPrecioHora()));
             spPiso.setValue(h.getPiso());

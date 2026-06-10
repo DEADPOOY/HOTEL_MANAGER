@@ -17,12 +17,12 @@ import modelo.Reservacion;
 
 public class ReservacionDAO {
 
-    public boolean insertar(Reservacion r) {
+    public boolean insertar(Reservacion r) { // Guarda una nueva reservación calculando periodos y costos financieros
         String sql = "INSERT INTO reservacion (id_cliente, id_habitacion, fecha_res, fecha_inicio, fecha_fin, periodo, precio_total, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, r.getIdCliente());
             ps.setInt(2, r.getIdHabitacion());
-            ps.setTimestamp(3, new Timestamp(r.getFechaRes().getTime()));
+            ps.setTimestamp(3, new Timestamp(r.getFechaRes().getTime())); // Transforma la fecha estándar de Java a marca temporal SQL
             ps.setTimestamp(4, new Timestamp(r.getFechaInicio().getTime()));
             ps.setTimestamp(5, new Timestamp(r.getFechaFin().getTime()));
             ps.setDouble(6, r.getPeriodo());
@@ -31,9 +31,9 @@ public class ReservacionDAO {
 
             int filas = ps.executeUpdate();
             if (filas > 0) {
-                try (ResultSet rs = ps.getGeneratedKeys()) {
+                try (ResultSet rs = ps.getGeneratedKeys()) { // Recupera el ID auto-generado de la reservación guardada
                     if (rs.next()) {
-                        r.setIdReservacion(rs.getInt(1));
+                        r.setIdReservacion(rs.getInt(1)); // Setea el ID en caliente para el hilo actual del programa
                     }
                 }
                 return true;
@@ -44,7 +44,7 @@ public class ReservacionDAO {
         return false;
     }
 
-    public boolean actualizar(Reservacion r) {
+    public boolean actualizar(Reservacion r) { // Edita los horarios y costos recalculados de las citas existentes
         String sql = "UPDATE reservacion SET id_cliente = ?, id_habitacion = ?, fecha_inicio = ?, fecha_fin = ?, periodo = ?, precio_total = ?, estado = ? WHERE id_reservacion = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setInt(1, r.getIdCliente());
@@ -62,7 +62,7 @@ public class ReservacionDAO {
         }
     }
 
-    public Reservacion obtenerPorId(int id) {
+    public Reservacion obtenerPorId(int id) { // Busca una reservación activa o histórica por su identificador único
         String sql = "SELECT * FROM reservacion WHERE id_reservacion = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -82,7 +82,7 @@ public class ReservacionDAO {
         return null;
     }
 
-    public List<Reservacion> obtenerActivas() {
+    public List<Reservacion> obtenerActivas() { // Lista exclusivamente los alquileres que se están usando en el momento
         List<Reservacion> lista = new ArrayList<>();
         String sql = "SELECT * FROM reservacion WHERE estado = 'Activa'";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql);
@@ -99,7 +99,7 @@ public class ReservacionDAO {
         return lista;
     }
 
-    public List<Reservacion> obtenerHistorial() {
+    public List<Reservacion> obtenerHistorial() { // Recupera todas las reservaciones sin importar su estado para auditorías generales
         List<Reservacion> lista = new ArrayList<>();
         String sql = "SELECT * FROM reservacion";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql);
@@ -116,7 +116,7 @@ public class ReservacionDAO {
         return lista;
     }
 
-    public List<Reservacion> obtenerPorCliente(int idCliente) {
+    public List<Reservacion> obtenerPorCliente(int idCliente) { // Filtra las reservaciones de un solo cliente usando su ID
         List<Reservacion> lista = new ArrayList<>();
         String sql = "SELECT * FROM reservacion WHERE id_cliente = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
@@ -135,7 +135,7 @@ public class ReservacionDAO {
         return lista;
     }
 
-    public List<Reservacion> obtenerPorPeriodo(java.util.Date inicio, java.util.Date fin) {
+    public List<Reservacion> obtenerPorPeriodo(java.util.Date inicio, java.util.Date fin) { // Filtra las reservaciones dentro de un rango de fechas (para exportar reportes comerciales)
         List<Reservacion> lista = new ArrayList<>();
         String sql = "SELECT * FROM reservacion WHERE fecha_inicio >= ? AND fecha_fin <= ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
@@ -155,7 +155,7 @@ public class ReservacionDAO {
         return lista;
     }
 
-    public boolean cancelar(int idReservacion) {
+    public boolean cancelar(int idReservacion) { // Pasa el estado de una reservación a Cancelada
         String sql = "UPDATE reservacion SET estado = 'Cancelada' WHERE id_reservacion = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setInt(1, idReservacion);

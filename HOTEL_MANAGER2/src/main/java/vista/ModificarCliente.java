@@ -30,7 +30,7 @@ public class ModificarCliente extends JDialog {
         setLocationRelativeTo(parent);
         setLayout(new GridLayout(3, 2, 10, 10));
 
-        add(new JLabel("  Nombre:")); txtNom = new JTextField(c.getNomCliente()); add(txtNom);
+        add(new JLabel("  Nombre:")); txtNom = new JTextField(c.getNomCliente()); add(txtNom); // Rellena los campos automáticamente con la información guardada originalmente
         add(new JLabel("  Teléfono:")); txtTel = new JTextField(c.getNumCliente()); add(txtTel);
 
         btnGuardar = new JButton("Actualizar");
@@ -41,18 +41,18 @@ public class ModificarCliente extends JDialog {
         add(btnGuardar); add(btnCancelar);
 
         btnCancelar.addActionListener(e -> this.dispose());
-        btnGuardar.addActionListener(e -> {
-            clienteActual.setNomCliente(txtNom.getText());
-            clienteActual.setNumCliente(txtTel.getText());
+        btnGuardar.addActionListener(e -> { // Valida y guarda los cambios realizados en los datos del cliente
+            clienteActual.setNomCliente(txtNom.getText().trim());
+            clienteActual.setNumCliente(txtTel.getText().trim());
 
             if (Validador.textoVacio(clienteActual.getNomCliente()) || !Validador.formatoTelefono(clienteActual.getNumCliente())) {
-                JOptionPane.showMessageDialog(this, "Verifique los datos.");
+                JOptionPane.showMessageDialog(this, "Verifique los datos ingresados. Formato de teléfono inválido.");
                 return;
             }
 
-            if (clienteDAO.actualizar(clienteActual)) {
-                padre.llenarTabla();
-                this.dispose();
+            if (clienteDAO.actualizar(clienteActual)) { // Guarda los cambios del cliente en MySQL
+                padre.llenarTabla(); // Refresca de forma inmediata la lista de clientes mostrada en la tabla del formulario padre
+                this.dispose(); // Cierra el cuadro flotante
             }
         });
     }

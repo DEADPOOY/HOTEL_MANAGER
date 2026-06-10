@@ -9,20 +9,20 @@ package modelo;
  * @author deadpooy
  */
 
-import java.util.Date;
+import java.util.Date; // Librería estándar de fechas de Java
 
 public class Reservacion {
-    private int idReservacion;
-    private int idCliente;
-    private int idHabitacion;
-    private Date fechaRes;
-    private Date fechaInicio;
-    private Date fechaFin;
-    private double periodo;
-    private double precioTotal;
-    private String estado;
+    private int idReservacion; // ID único correlativo de control
+    private int idCliente; // ID asociado del cliente titular
+    private int idHabitacion; // ID del cuarto reservado
+    private Date fechaRes; // Cuándo se registró la cita en sistema
+    private Date fechaInicio; // Cuándo inicia la estancia física
+    private Date fechaFin; // Cuándo concluye la estancia física
+    private double periodo; // Cuantificación horaria de duración
+    private double precioTotal; // Monto financiero final de cobro
+    private String estado; // Estado de reservación (Activa, Cancelada, Concluida)
 
-    public Reservacion(int idReservacion, int idCliente, int idHabitacion, Date fechaRes, Date fechaInicio, Date fechaFin, double periodo, double precioTotal, String estado) {
+    public Reservacion(int idReservacion, int idCliente, int idHabitacion, Date fechaRes, Date fechaInicio, Date fechaFin, double periodo, double precioTotal, String estado) { // Inicializador estructurado
         this.idReservacion = idReservacion;
         this.idCliente = idCliente;
         this.idHabitacion = idHabitacion;
@@ -34,11 +34,11 @@ public class Reservacion {
         this.estado = estado;
     }
 
+    // Getters y Setters para lectura y reajuste de parámetros comerciales
     public int getIdReservacion() { return idReservacion; }
     public void setIdReservacion(int idReservacion) { this.idReservacion = idReservacion; }
     public int getIdCliente() { return idCliente; }
     public void setIdCliente(int idCliente) { this.idCliente = idCliente; }
-    public int idHabitacion() { return idHabitacion; }
     public int getIdHabitacion() { return idHabitacion; }
     public void setIdHabitacion(int idHabitacion) { this.idHabitacion = idHabitacion; }
     public Date getFechaRes() { return fechaRes; }

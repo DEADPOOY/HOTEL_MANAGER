@@ -17,16 +17,16 @@ import modelo.Cliente;
 
 public class ClienteDAO {
 
-    public boolean insertar(Cliente c) {
+    public boolean insertar(Cliente c) { // Inserta un huésped nuevo y recupera su ID auto-generado al instante
         String sql = "INSERT INTO cliente (nom_cliente, num_cliente) VALUES (?, ?)";
-        try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) { // Pide de vuelta las llaves generadas por el motor MySQL
             ps.setString(1, c.getNomCliente());
             ps.setString(2, c.getNumCliente());
-            int filas = ps.executeUpdate();
+            int filas = ps.executeUpdate(); // Guarda las filas afectadas
             if (filas > 0) {
-                try (ResultSet rs = ps.getGeneratedKeys()) {
+                try (ResultSet rs = ps.getGeneratedKeys()) { // Recupera el conjunto de llaves creadas
                     if (rs.next()) {
-                        c.setIdCliente(rs.getInt(1));
+                        c.setIdCliente(rs.getInt(1)); // Setea el ID asignado por MySQL directamente en el objeto cliente en ejecución
                     }
                 }
                 return true;
@@ -37,7 +37,7 @@ public class ClienteDAO {
         return false;
     }
 
-    public boolean actualizar(Cliente c) {
+    public boolean actualizar(Cliente c) { // Actualiza los datos de contacto de un cliente existente
         String sql = "UPDATE cliente SET nom_cliente = ?, num_cliente = ? WHERE id_cliente = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setString(1, c.getNomCliente());
@@ -50,7 +50,7 @@ public class ClienteDAO {
         }
     }
 
-    public Cliente obtenerPorId(int id) {
+    public Cliente obtenerPorId(int id) { // Busca un huésped específico por su ID único
         String sql = "SELECT * FROM cliente WHERE id_cliente = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -65,7 +65,7 @@ public class ClienteDAO {
         return null;
     }
 
-    public Cliente obtenerPorNumero(String numCliente) {
+    public Cliente obtenerPorNumero(String numCliente) { // Busca un cliente por teléfono para saber si ya se ha registrado antes
         String sql = "SELECT * FROM cliente WHERE num_cliente = ?";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
             ps.setString(1, numCliente);
@@ -80,7 +80,7 @@ public class ClienteDAO {
         return null;
     }
 
-    public List<Cliente> obtenerTodos() {
+    public List<Cliente> obtenerTodos() { // Genera la lista completa de huéspedes para auditorías
         List<Cliente> lista = new ArrayList<>();
         String sql = "SELECT * FROM cliente";
         try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql);

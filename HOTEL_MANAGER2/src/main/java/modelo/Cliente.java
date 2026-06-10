@@ -10,16 +10,17 @@ package modelo;
  */
 
 public class Cliente {
-    private int idCliente;
-    private String nomCliente;
-    private String numCliente;
+    private int idCliente; // ID numérico relacional del cliente
+    private String nomCliente; // Nombre completo guardado en sistema
+    private String numCliente; // Número telefónico de control de contacto
 
-    public Cliente(int idCliente, String nomCliente, String numCliente) {
-        this.idCliente = idCliente;
-        this.nomCliente = nomCliente;
-        this.numCliente = numCliente;
+    public Cliente(int idCliente, String nomCliente, String numCliente) { // Inicializador del objeto cliente
+        this.idCliente = idCliente; // Define el ID
+        this.nomCliente = nomCliente; // Define el nombre
+        this.numCliente = numCliente; // Define el teléfono
     }
 
+    // Encapsulamiento del modelo de datos de clientes
     public int getIdCliente() { return idCliente; }
     public void setIdCliente(int idCliente) { this.idCliente = idCliente; }
     public String getNomCliente() { return nomCliente; }

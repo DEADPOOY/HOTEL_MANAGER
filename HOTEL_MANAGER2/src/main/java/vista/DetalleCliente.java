@@ -21,7 +21,7 @@ public class DetalleCliente extends JFrame {
     private DefaultTableModel modeloTabla;
     private ReservacionDAO reservacionDAO;
 
-    public DetalleCliente(int idCliente) {
+    public DetalleCliente(int idCliente) { // Recibe el ID único del cliente a auditar
         reservacionDAO = new ReservacionDAO();
         setTitle("Historial de Actividad del Huésped");
         setSize(600, 300);
@@ -29,13 +29,13 @@ public class DetalleCliente extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        modeloTabla = new DefaultTableModel(new Object[]{"ID", "Habitación ID", "Inicio", "Fin", "Estado", "Total"}, 0);
+        modeloTabla = new DefaultTableModel(new Object[]{"ID", "Habitación ID", "Inicio", "Fin", "Estado", "Total Renta"}, 0);
         tablaHistorial = new JTable(modeloTabla);
         add(new JScrollPane(tablaHistorial), BorderLayout.CENTER);
 
-        List<Reservacion> lista = reservacionDAO.obtenerPorCliente(idCliente);
+        List<Reservacion> lista = reservacionDAO.obtenerPorCliente(idCliente); // Busca todas las reservaciones asociadas a este cliente en MySQL
         for (Reservacion r : lista) {
-            modeloTabla.addRow(new Object[]{r.getIdReservacion(), r.getIdHabitacion(), r.getFechaInicio(), r.getFechaFin(), r.getEstado(), r.getPrecioTotal()});
+            modeloTabla.addRow(new Object[]{r.getIdReservacion(), r.getIdHabitacion(), r.getFechaInicio(), r.getFechaFin(), r.getEstado(), r.getPrecioTotal()}); // Añade las reservaciones encontradas a la tabla de historial
         }
     }
 }
