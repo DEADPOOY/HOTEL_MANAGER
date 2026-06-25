@@ -72,6 +72,13 @@ public class CrearHabitacion extends JDialog {
                 return;
             }
 
+            if (habitacionDAO.existePorNumeroYPiso(num, piso)) {
+                JOptionPane.showMessageDialog(this,
+                        "Ya existe la habitación N° " + num + " en el piso " + piso + ".",
+                        "Habitación duplicada", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             Habitacion h = new Habitacion(0, num, tipo, piso, precio, capacidad, "Disponible");
             if (habitacionDAO.insertar(h)) {
                 JOptionPane.showMessageDialog(this, "Habitación registrada correctamente.");

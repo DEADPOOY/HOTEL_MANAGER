@@ -127,5 +127,35 @@ public class HabitacionDAO {
             return false;
         }
     }
+
+    public boolean existePorNumeroYPiso(String numHabitacion, int piso) {
+        String sql = "SELECT COUNT(*) FROM habitacion WHERE num_habitacion = ? AND piso = ?";
+        try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
+            ps.setString(1, numHabitacion);
+            ps.setInt(2, piso);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<Integer> obtenerPisos() {
+        List<Integer> pisos = new ArrayList<>();
+        String sql = "SELECT DISTINCT piso FROM habitacion ORDER BY piso ASC";
+        try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                pisos.add(rs.getInt("piso"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pisos;
+    }
     
 }

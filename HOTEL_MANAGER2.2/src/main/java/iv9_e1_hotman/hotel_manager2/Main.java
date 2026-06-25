@@ -8,6 +8,11 @@ package iv9_e1_hotman.hotel_manager2;
  *
  * @author deadpooy
  */
+
+//buscador de numero habitacion
+//filtro de pisos
+//verificacion de piso y numero al crear nueva
+//
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import vista.PantallaInicio;

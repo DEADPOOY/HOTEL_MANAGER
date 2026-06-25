@@ -8,13 +8,21 @@ package vista;
 import dao.HabitacionDAO;
 import modelo.Habitacion;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.List;
 
 public class Habitaciones extends JPanel {
 
+    private static final String TODOS_LOS_PISOS = "Todos los pisos";
+    private static final String TODOS_LOS_ESTADOS = "Todos los estados";
+
     private JPanel gridPanel;
     private HabitacionDAO habitacionDAO;
+    private JTextField txtBuscarNumero;
+    private JComboBox<String> cbFiltroPiso;
+    private JComboBox<String> cbFiltroEstado;
     
     public Habitaciones() {
         habitacionDAO = new HabitacionDAO();
@@ -23,24 +31,71 @@ public class Habitaciones extends JPanel {
         setLayout(new BorderLayout(20, 20));
         setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
-        JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel topPanel = new JPanel(new BorderLayout(15, 0));
         topPanel.setOpaque(false);
+
+        JPanel filtrosPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        filtrosPanel.setOpaque(false);
+
+        JLabel lblBuscar = new JLabel("Buscar N°:");
+        lblBuscar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblBuscar.setForeground(new Color(0x1A, 0x27, 0x44));
+        filtrosPanel.add(lblBuscar);
+
+        txtBuscarNumero = new JTextField(12);
+        txtBuscarNumero.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txtBuscarNumero.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { refrescarGrid(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { refrescarGrid(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { refrescarGrid(); }
+        });
+        filtrosPanel.add(txtBuscarNumero);
+
+        JLabel lblPiso = new JLabel("Piso:");
+        lblPiso.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblPiso.setForeground(new Color(0x1A, 0x27, 0x44));
+        filtrosPanel.add(lblPiso);
+
+        cbFiltroPiso = new JComboBox<>();
+        cbFiltroPiso.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cbFiltroPiso.addActionListener(e -> refrescarGrid());
+        filtrosPanel.add(cbFiltroPiso);
+
+        JLabel lblEstado = new JLabel("Estado:");
+        lblEstado.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblEstado.setForeground(new Color(0x1A, 0x27, 0x44));
+        filtrosPanel.add(lblEstado);
+
+        cbFiltroEstado = new JComboBox<>(new String[]{
+                TODOS_LOS_ESTADOS, "Disponible", "Ocupada", "Mantenimiento"
+        });
+        cbFiltroEstado.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cbFiltroEstado.addActionListener(e -> refrescarGrid());
+        filtrosPanel.add(cbFiltroEstado);
 
         JPanel accionesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         accionesPanel.setOpaque(false);
 
         JButton btnRecargar = crearBotonAccion("Recargar", new Color(0x1A, 0x27, 0x44), 130);
-        btnRecargar.addActionListener(e -> refrescarGrid());
+        btnRecargar.addActionListener(e -> {
+            cargarFiltroPisos();
+            refrescarGrid();
+        });
 
         JButton btnNueva = crearBotonAccion("Nueva Habitación", new Color(0xC9, 0xA8, 0x4C), 180);
         btnNueva.addActionListener(e -> {
             CrearHabitacion dial = new CrearHabitacion((Frame) SwingUtilities.getWindowAncestor(this));
             dial.setVisible(true);
+            cargarFiltroPisos();
             refrescarGrid();
         });
 
         accionesPanel.add(btnRecargar);
         accionesPanel.add(btnNueva);
+        topPanel.add(filtrosPanel, BorderLayout.WEST);
         topPanel.add(accionesPanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
@@ -54,14 +109,59 @@ public class Habitaciones extends JPanel {
 
         add(scroll, BorderLayout.CENTER);
 
+        cargarFiltroPisos();
         refrescarGrid();
+    }
+
+    private void cargarFiltroPisos() {
+        String seleccionActual = cbFiltroPiso.getSelectedItem() != null
+                ? cbFiltroPiso.getSelectedItem().toString()
+                : TODOS_LOS_PISOS;
+
+        cbFiltroPiso.removeAllItems();
+        cbFiltroPiso.addItem(TODOS_LOS_PISOS);
+        for (int piso : habitacionDAO.obtenerPisos()) {
+            cbFiltroPiso.addItem(String.valueOf(piso));
+        }
+
+        boolean existeSeleccion = false;
+        for (int i = 0; i < cbFiltroPiso.getItemCount(); i++) {
+            if (cbFiltroPiso.getItemAt(i).equals(seleccionActual)) {
+                cbFiltroPiso.setSelectedIndex(i);
+                existeSeleccion = true;
+                break;
+            }
+        }
+        if (!existeSeleccion) {
+            cbFiltroPiso.setSelectedIndex(0);
+        }
     }
 
     public void refrescarGrid() {
         gridPanel.removeAll();
         List<Habitacion> lista = habitacionDAO.obtenerTodos();
 
+        String busqueda = txtBuscarNumero.getText().trim().toLowerCase();
+        String pisoSeleccionado = cbFiltroPiso.getSelectedItem() != null
+                ? cbFiltroPiso.getSelectedItem().toString()
+                : TODOS_LOS_PISOS;
+        Integer pisoFiltro = pisoSeleccionado.equals(TODOS_LOS_PISOS) ? null : Integer.parseInt(pisoSeleccionado);
+        String estadoSeleccionado = cbFiltroEstado.getSelectedItem() != null
+                ? cbFiltroEstado.getSelectedItem().toString()
+                : TODOS_LOS_ESTADOS;
+
+        int coincidencias = 0;
         for (Habitacion h : lista) {
+            if (!busqueda.isEmpty() && !h.getNumHabitacion().toLowerCase().contains(busqueda)) {
+                continue;
+            }
+            if (pisoFiltro != null && h.getPiso() != pisoFiltro) {
+                continue;
+            }
+            if (!estadoSeleccionado.equals(TODOS_LOS_ESTADOS) && !coincideEstado(h.getEstado(), estadoSeleccionado)) {
+                continue;
+            }
+            coincidencias++;
             JPanel card = new JPanel(new BorderLayout(10, 10));
             card.setBackground(Color.WHITE);
             
@@ -116,8 +216,28 @@ public class Habitaciones extends JPanel {
             gridPanel.add(card);
         }
 
+        if (coincidencias == 0) {
+            JLabel lblVacio = new JLabel("No se encontraron habitaciones con los filtros aplicados.", SwingConstants.CENTER);
+            lblVacio.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+            lblVacio.setForeground(new Color(0x64, 0x74, 0x8B));
+            gridPanel.add(lblVacio);
+        }
+
         gridPanel.revalidate();
         gridPanel.repaint();
+    }
+
+    private boolean coincideEstado(String estadoActual, String filtro) {
+        if (estadoActual == null) {
+            return false;
+        }
+        String estado = estadoActual.trim();
+        return switch (filtro) {
+            case "Disponible" -> estado.equalsIgnoreCase("Disponible") || estado.equalsIgnoreCase("Libre");
+            case "Ocupada" -> estado.equalsIgnoreCase("Ocupada");
+            case "Mantenimiento" -> estado.equalsIgnoreCase("Limpieza") || estado.equalsIgnoreCase("Mantenimiento");
+            default -> true;
+        };
     }
 
     private JButton crearBotonAccion(String texto, Color fondo, int ancho) {
