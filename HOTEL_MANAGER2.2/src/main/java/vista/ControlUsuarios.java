@@ -10,107 +10,118 @@ package vista;
  */
 
 import dao.UsuarioDAO;
-import java.awt.*;
-import java.util.List;
+import modelo.Usuario;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import modelo.Usuario;
+import java.awt.*;
+import java.util.List;
 
-public class ControlUsuarios extends JFrame {
-    
-    private JTable tablaRecepcionistas, tablaAnalistas;
-    private DefaultTableModel modeloRec, modeloAna;
-    private JButton btnNuevo, btnEliminar, btnRegresar;
+public class ControlUsuarios extends JPanel {
+
+    private JTable tablaUsuarios;
+    private DefaultTableModel modeloTabla;
     private UsuarioDAO usuarioDAO;
 
     public ControlUsuarios() {
         usuarioDAO = new UsuarioDAO();
-        setTitle("Control de Usuarios - Administrador");
-        setSize(750, 450);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
 
-        modeloRec = new DefaultTableModel(new Object[]{"ID", "Nombre"}, 0);
-        tablaRecepcionistas = new JTable(modeloRec);
-        
-        modeloAna = new DefaultTableModel(new Object[]{"ID", "Nombre"}, 0);
-        tablaAnalistas = new JTable(modeloAna);
+        setBackground(new Color(0xF7, 0xF5, 0xF0));
+        setLayout(new BorderLayout(20, 20));
+        setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
-        JPanel panelTablas = new JPanel(new GridLayout(1, 2, 15, 10));
-        panelTablas.add(new JScrollPane(tablaRecepcionistas));
-        panelTablas.add(new JScrollPane(tablaAnalistas));
+        // Barra superior de acciones
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
 
-        JPanel panelBotones = new JPanel();
-        btnNuevo = new JButton("Nuevo Usuario");
-        btnEliminar = new JButton("Eliminar Usuario");
-        btnRegresar = new JButton("Regresar");
-
-        btnNuevo.setBackground(Color.decode("#28a745"));
+        JButton btnNuevo = new JButton("Registrar Nuevo Usuario") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(new Color(0xC9, 0xA8, 0x4C));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnNuevo.setForeground(Color.WHITE);
-        btnEliminar.setBackground(Color.decode("#dc3545"));
-        btnEliminar.setForeground(Color.WHITE);
-        btnRegresar.setBackground(Color.decode("#6c757d"));
-        btnRegresar.setForeground(Color.WHITE);
-
-        panelBotones.add(btnNuevo);
-        panelBotones.add(btnEliminar);
-        panelBotones.add(btnRegresar);
-
-        add(panelTablas, BorderLayout.CENTER);
-        add(panelBotones, BorderLayout.SOUTH);
-
-        llenarTablas();
-
-        btnNuevo.addActionListener(e -> new CrearUsuario(this).setVisible(true));
-        btnRegresar.addActionListener(e -> {
-            new PantallaInicio().setVisible(true);
-            dispose();
+        btnNuevo.setContentAreaFilled(false);
+        btnNuevo.setBorderPainted(false);
+        btnNuevo.setPreferredSize(new Dimension(200, 38));
+        btnNuevo.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnNuevo.addActionListener(e -> {
+            CrearUsuario dial = new CrearUsuario((Frame) SwingUtilities.getWindowAncestor(this));
+            dial.setVisible(true);
+            cargarDatos();
         });
+
+        topPanel.add(btnNuevo, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
+
+        // Card contenedora de la Tabla
+        JPanel tableCard = new JPanel(new BorderLayout());
+        tableCard.setBackground(Color.WHITE);
+        tableCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xE2, 0xE8, 0xF0), 1),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+
+        String[] columnas = {"ID Usuario", "Nombre de Usuario", "Rol Asignado", "Primer Login"};
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+        tablaUsuarios = new JTable(modeloTabla);
+        tablaUsuarios.setRowHeight(30);
+        tablaUsuarios.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tablaUsuarios.getTableHeader().setBackground(new Color(0x1A, 0x27, 0x44));
+        tablaUsuarios.getTableHeader().setForeground(Color.WHITE);
+
+        JScrollPane scroll = new JScrollPane(tablaUsuarios);
+        tableCard.add(scroll, BorderLayout.CENTER);
+
+        // Barra inferior para la eliminación de usuarios
+        JPanel botPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        botPanel.setOpaque(false);
+        
+        JButton btnEliminar = new JButton("Eliminar Seleccionado");
+        btnEliminar.setForeground(new Color(0xE7, 0x4C, 0x3C));
         btnEliminar.addActionListener(e -> eliminarUsuario());
+        botPanel.add(btnEliminar);
+        
+        tableCard.add(botPanel, BorderLayout.SOUTH);
+        add(tableCard, BorderLayout.CENTER);
+
+        cargarDatos();
     }
 
-    public void llenarTablas() {
-        modeloRec.setRowCount(0);
-        modeloAna.setRowCount(0);
-        
+    private void cargarDatos() {
+        modeloTabla.setRowCount(0);
         List<Usuario> lista = usuarioDAO.obtenerTodos();
-        if (lista == null || lista.isEmpty()) {
-            lista = usuarioDAO.obtenerTodos();
-        }
-        
         for (Usuario u : lista) {
-            if ("Recepcionista".equals(u.getRol())) {
-                modeloRec.addRow(new Object[]{u.getIdUsuario(), u.getNombre()});
-            } else if ("Analista".equals(u.getRol())) {
-                modeloAna.addRow(new Object[]{u.getIdUsuario(), u.getNombre()});
-            }
+            modeloTabla.addRow(new Object[]{
+                u.getIdUsuario(), u.getNombre(), u.getRol(), (u.getPrimerLogin() == 1 ? "Sí" : "No")
+            });
         }
     }
 
     private void eliminarUsuario() {
-        int filaRec = tablaRecepcionistas.getSelectedRow();
-        int filaAna = tablaAnalistas.getSelectedRow();
-        int idEliminar = -1;
-
-        if (filaRec != -1) {
-            idEliminar = (int) modeloRec.getValueAt(filaRec, 0);
-        } else if (filaAna != -1) {
-            idEliminar = (int) modeloAna.getValueAt(filaAna, 0);
-        }
-
-        if (idEliminar == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un usuario para eliminar.");
+        int fila = tablaUsuarios.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un usuario de la lista.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        int id = (int) modeloTabla.getValueAt(fila, 0);
+        String nombre = (String) modeloTabla.getValueAt(fila, 1);
 
-        ConfirmarEliminar dialogo = new ConfirmarEliminar(this);
-        dialogo.setVisible(true);
-
-        if (dialogo.isConfirmado()) {
-            if (usuarioDAO.eliminar(idEliminar)) {
-                llenarTablas();
-                JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
+        int conf = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar al usuario '" + nombre + "'?", "Confirmar acción", JOptionPane.YES_NO_OPTION);
+        if (conf == JOptionPane.YES_OPTION) {
+            if (usuarioDAO.eliminar(id)) {
+                JOptionPane.showMessageDialog(this, "Usuario revocado correctamente.");
+                cargarDatos();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo eliminar el usuario seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

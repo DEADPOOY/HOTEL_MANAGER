@@ -14,14 +14,14 @@ import vista.PantallaInicio;
 
 public class Main {
     public static void main(String[] args) {
-        // Aplica el diseño visual del sistema operativo para que las ventanas se vean modernas
+        // Aplica el diseño visual nativo del sistema operativo para que las ventanas se vean modernas
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            System.out.println("No se pudo establecer la interfaz del sistema, se usará el por defecto.");
+            System.out.println("No se pudo establecer la interfaz nativa, se usará el diseño por defecto.");
         }
 
-        // Lanza la aplicación desde la Pantalla de Inicio principal
+        // Lanza la aplicación desde la Pantalla de Inicio principal de forma segura en el Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
             new PantallaInicio().setVisible(true);
         });

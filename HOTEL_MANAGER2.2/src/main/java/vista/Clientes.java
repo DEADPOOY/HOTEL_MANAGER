@@ -10,69 +10,101 @@ package vista;
  */
 
 import dao.ClienteDAO;
-import java.awt.*;
-import java.util.List;
+import modelo.Cliente;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import modelo.Cliente;
+import java.awt.*;
+import java.util.List;
 
-public class Clientes extends JFrame {
+public class Clientes extends JPanel {
+
     private JTable tablaClientes;
     private DefaultTableModel modeloTabla;
-    private JButton btnNuevo, btnEditar, btnDetalle, btnCerrar;
     private ClienteDAO clienteDAO;
 
     public Clientes() {
         clienteDAO = new ClienteDAO();
-        setTitle("Catálogo General de Clientes");
-        setSize(600, 400);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
 
-        modeloTabla = new DefaultTableModel(new Object[]{"ID", "Nombre", "Teléfono"}, 0);
-        tablaClientes = new JTable(modeloTabla);
-        add(new JScrollPane(tablaClientes), BorderLayout.CENTER);
+        setBackground(new Color(0xF7, 0xF5, 0xF0));
+        setLayout(new BorderLayout(20, 20));
+        setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
-        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        btnNuevo = new JButton("Nuevo");
-        btnEditar = new JButton("Editar");
-        btnDetalle = new JButton("Ver Historial");
-        btnCerrar = new JButton("Cerrar");
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
 
-        btnNuevo.setBackground(Color.decode("#28a745"));
+        JButton btnNuevo = new JButton("Nuevo Huésped") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(new Color(0xC9, 0xA8, 0x4C));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        btnNuevo.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnNuevo.setForeground(Color.WHITE);
-        btnEditar.setBackground(Color.decode("#fd7e14"));
-        btnEditar.setForeground(Color.WHITE);
+        btnNuevo.setContentAreaFilled(false);
+        btnNuevo.setBorderPainted(false);
+        btnNuevo.setPreferredSize(new Dimension(160, 38));
+        btnNuevo.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnNuevo.addActionListener(e -> {
+            CrearCliente dial = new CrearCliente((Frame) SwingUtilities.getWindowAncestor(this));
+            dial.setVisible(true);
+            cargarDatos();
+        });
 
-        panelAcciones.add(btnNuevo); panelAcciones.add(btnEditar); panelAcciones.add(btnDetalle); panelAcciones.add(btnCerrar);
-        add(panelAcciones, BorderLayout.SOUTH);
+        topPanel.add(btnNuevo, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
 
-        llenarTabla();
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xE2, 0xE8, 0xF0), 1),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
 
-        btnCerrar.addActionListener(e -> this.dispose());
-        btnNuevo.addActionListener(e -> new CrearCliente(this).setVisible(true));
-        
-        btnEditar.addActionListener(e -> {
+        String[] columnas = {"ID Huésped", "Nombre Completo", "Número de Contacto / Documento"};
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+        tablaClientes = new JTable(modeloTabla);
+        tablaClientes.setRowHeight(30);
+        tablaClientes.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tablaClientes.getTableHeader().setBackground(new Color(0x1A, 0x27, 0x44));
+        tablaClientes.getTableHeader().setForeground(Color.WHITE);
+
+        JScrollPane scroll = new JScrollPane(tablaClientes);
+        card.add(scroll, BorderLayout.CENTER);
+
+        JPanel botPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        botPanel.setOpaque(false);
+        JButton btnMod = new JButton("Modificar Seleccionado");
+        btnMod.addActionListener(e -> {
             int fila = tablaClientes.getSelectedRow();
-            if (fila == -1) return;
+            if (fila == -1) {
+                JOptionPane.showMessageDialog(this, "Seleccione un registro.");
+                return;
+            }
             int id = (int) modeloTabla.getValueAt(fila, 0);
             Cliente c = clienteDAO.obtenerPorId(id);
-            if (c != null) new ModificarCliente(this, c).setVisible(true);
+            ModificarCliente md = new ModificarCliente((Frame) SwingUtilities.getWindowAncestor(this), c);
+            md.setVisible(true);
+            cargarDatos();
         });
+        botPanel.add(btnMod);
+        card.add(botPanel, BorderLayout.SOUTH);
 
-        btnDetalle.addActionListener(e -> {
-            int fila = tablaClientes.getSelectedRow();
-            if (fila == -1) return;
-            int id = (int) modeloTabla.getValueAt(fila, 0);
-            new DetalleCliente(id).setVisible(true);
-        });
+        add(card, BorderLayout.CENTER);
+        cargarDatos();
     }
 
-    public void llenarTabla() {
+    private void cargarDatos() {
         modeloTabla.setRowCount(0);
-        List<Cliente> lista = clienteDAO.obtenerTodos();
-        for (Cliente c : lista) {
+        List<Cliente> list = clienteDAO.obtenerTodos();
+        for (Cliente c : list) {
             modeloTabla.addRow(new Object[]{c.getIdCliente(), c.getNomCliente(), c.getNumCliente()});
         }
     }

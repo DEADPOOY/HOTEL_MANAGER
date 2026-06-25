@@ -9,111 +9,127 @@ package vista;
  * @author deadpooy
  */
 
-import dao.HabitacionDAO;
 import dao.ReservacionDAO;
-import java.awt.*;
-import java.util.List;
+import modelo.Reservacion;
+import modelo.Usuario;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import modelo.Reservacion;
+import java.awt.*;
+import java.util.List;
 
-public class Reservaciones extends JFrame {
-    
-    private JTable tablaRes;
+public class Reservaciones extends JPanel {
+
+    private JTable tablaReservas;
     private DefaultTableModel modeloTabla;
-    private JButton btnCrear, btnModificar, btnCancelar, btnHabitaciones, btnHistorial;
     private ReservacionDAO reservacionDAO;
-    private HabitacionDAO habitacionDAO;
+    private Usuario usuarioActual;
 
-    public Reservaciones() {
-        reservacionDAO = new ReservacionDAO();
-        habitacionDAO = new HabitacionDAO();
-        setTitle("Módulo de Reservaciones Activas");
-        setSize(850, 450);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
+    public Reservaciones(Usuario usuario) {
+        this.usuarioActual = usuario;
+        this.reservacionDAO = new ReservacionDAO();
 
-        modeloTabla = new DefaultTableModel(new Object[]{"ID", "ID Cliente", "ID Habitación", "Inicio", "Fin", "Precio Total"}, 0);
-        tablaRes = new JTable(modeloTabla);
-        add(new JScrollPane(tablaRes), BorderLayout.CENTER);
+        setBackground(new Color(0xF7, 0xF5, 0xF0));
+        setLayout(new BorderLayout(20, 20));
+        setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
-        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        btnCrear = new JButton("Crear Reservación");
-        btnModificar = new JButton("Modificar");
-        btnCancelar = new JButton("Cancelar");
-        btnHabitaciones = new JButton("Ver Habitaciones");
-        btnHistorial = new JButton("Historial General");
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
 
-        btnCrear.setBackground(Color.decode("#28a745"));
-        btnCrear.setForeground(Color.WHITE);
-        btnModificar.setBackground(Color.decode("#fd7e14"));
-        btnModificar.setForeground(Color.WHITE);
-        btnCancelar.setBackground(Color.decode("#dc3545"));
-        btnCancelar.setForeground(Color.WHITE);
-        btnHabitaciones.setBackground(Color.decode("#1a3a5c"));
-        btnHabitaciones.setForeground(Color.WHITE);
-
-        btnHistorial.setVisible(Sesion.esAdmin() || Sesion.esAnalista());
-
-        panelAcciones.add(btnCrear); 
-        panelAcciones.add(btnModificar); 
-        panelAcciones.add(btnCancelar);
-        panelAcciones.add(btnHabitaciones); 
-        panelAcciones.add(btnHistorial);
-        add(panelAcciones, BorderLayout.SOUTH);
-
-        llenarTabla();
-
-        btnHabitaciones.addActionListener(e -> new Habitaciones().setVisible(true));
-        
-        btnCrear.addActionListener(e -> new CrearReservacion(this).setVisible(true));
-        
-        btnModificar.addActionListener(e -> {
-            int fila = tablaRes.getSelectedRow();
-            if (fila == -1) {
-                JOptionPane.showMessageDialog(this, "Seleccione una reservación para modificar.");
-                return;
-            }
-            int idRes = (int) modeloTabla.getValueAt(fila, 0);
-            Reservacion r = reservacionDAO.obtenerPorId(idRes);
-            if (r != null) {
-                ModificarReservacion dialogo = new ModificarReservacion(this);
-                dialogo.cargarDatos(r);
-                dialogo.setVisible(true);
-            }
-        });
-        
-        btnHistorial.addActionListener(e -> {
-            new HistorialReservaciones().setVisible(true);
-        });
-
-        btnCancelar.addActionListener(e -> {
-            int fila = tablaRes.getSelectedRow();
-            if (fila == -1) {
-                JOptionPane.showMessageDialog(this, "Seleccione una reservación.");
-                return;
-            }
-            int idRes = (int) modeloTabla.getValueAt(fila, 0);
-            int idHab = (int) modeloTabla.getValueAt(fila, 2);
-
-            ConfirmarCancelar dialog = new ConfirmarCancelar(this);
+        JButton btnNueva = crearBotonPremium("Nueva Reservación", new Color(0xC9, 0xA8, 0x4C));
+        btnNueva.addActionListener(e -> {
+            CrearReservacion dialog = new CrearReservacion((Frame) SwingUtilities.getWindowAncestor(this));
             dialog.setVisible(true);
-            if (dialog.isConfirmado()) {
-                if (reservacionDAO.cancelar(idRes)) {
-                    habitacionDAO.cambiarEstado(idHab, "Libre");
-                    llenarTabla();
-                    JOptionPane.showMessageDialog(this, "Reservación cancelada.");
-                }
-            }
+            cargarDatos();
         });
+        topPanel.add(btnNueva, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
+
+        JPanel tableCard = new JPanel(new BorderLayout());
+        tableCard.setBackground(Color.WHITE);
+        tableCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xE2, 0xE8, 0xF0), 1),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+
+        String[] columnas = {"ID", "ID Cliente", "ID Habitación", "Inicio", "Fin", "Periodo (Hrs)", "Precio Total", "Estado"};
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+
+        tablaReservas = new JTable(modeloTabla);
+        tablaReservas.setRowHeight(30);
+        tablaReservas.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tablaReservas.getTableHeader().setBackground(new Color(0x1A, 0x27, 0x44));
+        tablaReservas.getTableHeader().setForeground(Color.WHITE);
+
+        JScrollPane scroll = new JScrollPane(tablaReservas);
+        tableCard.add(scroll, BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        bottomPanel.setOpaque(false);
+
+        JButton btnCancelar = crearBotonPremium("Cancelar Reserva Seleccionada", new Color(0xE7, 0x4C, 0x3C));
+        btnCancelar.addActionListener(e -> cancelarReserva());
+        bottomPanel.add(btnCancelar);
+
+        tableCard.add(bottomPanel, BorderLayout.SOUTH);
+        add(tableCard, BorderLayout.CENTER);
+
+        cargarDatos();
     }
 
-    public void llenarTabla() {
+    public void cargarDatos() {
         modeloTabla.setRowCount(0);
-        List<Reservacion> lista = reservacionDAO.obtenerActivas();
+        List<Reservacion> lista = reservacionDAO.obtenerPorEstado("Activa");
         for (Reservacion r : lista) {
-            modeloTabla.addRow(new Object[]{r.getIdReservacion(), r.getIdCliente(), r.getIdHabitacion(), r.getFechaInicio(), r.getFechaFin(), r.getPrecioTotal()});
+            Object[] fila = {
+                r.getIdReservacion(),
+                r.getIdCliente(),
+                r.getIdHabitacion(),
+                r.getFechaInicio(),
+                r.getFechaFin(),
+                r.getPeriodo(),
+                r.getPrecioTotal(),
+                r.getEstado()
+            };
+            modeloTabla.addRow(fila);
         }
+    }
+
+    private void cancelarReserva() {
+        int fila = tablaReservas.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione una reservación.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int id = Integer.parseInt(modeloTabla.getValueAt(fila, 0).toString());
+        int conf = JOptionPane.showConfirmDialog(this, "¿Seguro de cancelar la reserva ID: " + id + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (conf == JOptionPane.YES_OPTION) {
+            if (reservacionDAO.cancelar(id)) {
+                JOptionPane.showMessageDialog(this, "Reservación cancelada.");
+                cargarDatos();
+            }
+        }
+    }
+
+    private JButton crearBotonPremium(String texto, Color fondo) {
+        JButton btn = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(fondo);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(220, 38));
+        return btn;
     }
 }

@@ -9,124 +9,137 @@ package vista;
  * @author deadpooy
  */
 
+import dao.ReservacionDAO;
 import dao.ClienteDAO;
 import dao.HabitacionDAO;
-import dao.RegistroDAO;
-import dao.ReservacionDAO;
-import java.awt.*;
-import java.util.Date;
-import javax.swing.*;
+import modelo.Reservacion;
 import modelo.Cliente;
 import modelo.Habitacion;
-import modelo.Registro;
-import modelo.Reservacion;
+import javax.swing.*;
+import java.awt.*;
+import java.util.Date;
+import java.util.List;
 
 public class CrearReservacion extends JDialog {
-    
-    private JTextField txtNomCliente, txtNumCliente, txtHabId;
-    private JButton btnSeleccionarHab, btnGuardar, btnCancelar;
-    private JSpinner spInicio, spFin;
-    private Habitacion habitacionSeleccionada;
+
+    private JTextField txtNumCliente, txtNumHabitacion, txtHoras;
     private ReservacionDAO reservacionDAO;
     private ClienteDAO clienteDAO;
     private HabitacionDAO habitacionDAO;
-    private Reservaciones padre;
 
-    public CrearReservacion(Reservaciones parent) {
-        super(parent, "Nueva Reservación", true);
-        this.padre = parent;
+    public CrearReservacion(Frame padre) {
+        super(padre, "Nueva Reservación - LUXE", true);
         reservacionDAO = new ReservacionDAO();
         clienteDAO = new ClienteDAO();
         habitacionDAO = new HabitacionDAO();
 
-        setSize(400, 320);
-        setLocationRelativeTo(parent);
-        setLayout(new GridLayout(6, 2, 10, 10));
+        setSize(450, 400);
+        setLocationRelativeTo(padre);
+        setResizable(false);
+        getContentPane().setBackground(new Color(0xF7, 0xF5, 0xF0));
+        setLayout(new BorderLayout());
 
-        add(new JLabel("  Nombre Cliente:")); txtNomCliente = new JTextField(); add(txtNomCliente);
-        add(new JLabel("  Teléfono Cliente:")); txtNumCliente = new JTextField(); add(txtNumCliente);
-        add(new JLabel("  Habitación ID:")); txtHabId = new JTextField(); txtHabId.setEditable(false); add(txtHabId);
-        
-        btnSeleccionarHab = new JButton("Seleccionar Hab"); add(btnSeleccionarHab); add(new JLabel(""));
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
+        header.setBackground(new Color(0x1A, 0x27, 0x44));
+        JLabel lblTitulo = new JLabel("Registrar Reservación");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTitulo.setForeground(new Color(0xC9, 0xA8, 0x4C));
+        header.add(lblTitulo);
+        add(header, BorderLayout.NORTH);
 
-        spInicio = new JSpinner(new SpinnerDateModel());
-        spFin = new JSpinner(new SpinnerDateModel());
-        add(new JLabel("  Fecha Inicio:")); add(spInicio);
-        add(new JLabel("  Fecha Fin:")); add(spFin);
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+        form.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(8, 0, 8, 0);
+        gbc.weightx = 1.0;
 
-        btnGuardar = new JButton("Reservar");
-        btnCancelar = new JButton("Cancelar");
-        
-        btnGuardar.setBackground(Color.decode("#28a745"));
+        gbc.gridx = 0; gbc.gridy = 0;
+        form.add(new JLabel("Número / Doc. del Huésped:"), gbc);
+        gbc.gridy = 1;
+        txtNumCliente = crearTextField();
+        form.add(txtNumCliente, gbc);
+
+        gbc.gridy = 2;
+        form.add(new JLabel("Número de Habitación:"), gbc);
+        gbc.gridy = 3;
+        txtNumHabitacion = crearTextField();
+        form.add(txtNumHabitacion, gbc);
+
+        gbc.gridy = 4;
+        form.add(new JLabel("Periodo de Estadía (Horas):"), gbc);
+        gbc.gridy = 5;
+        txtHoras = crearTextField();
+        form.add(txtHoras, gbc);
+
+        add(form, BorderLayout.CENTER);
+
+        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
+        acciones.setOpaque(false);
+        JButton btnCancelar = new JButton("Cancelar");
+        JButton btnGuardar = new JButton("Confirmar Reserva");
+        btnGuardar.setBackground(new Color(0xC9, 0xA8, 0x4C));
         btnGuardar.setForeground(Color.WHITE);
-        btnCancelar.setBackground(Color.decode("#6c757d"));
-        btnCancelar.setForeground(Color.WHITE);
 
-        add(btnGuardar); add(btnCancelar);
+        btnCancelar.addActionListener(e -> dispose());
+        btnGuardar.addActionListener(e -> guardarReservacion());
+        
+        acciones.add(btnCancelar);
+        acciones.add(btnGuardar);
+        add(acciones, BorderLayout.SOUTH);
+    }
 
-        btnSeleccionarHab.addActionListener(e -> {
-            ElegirHabitacion dialog = new ElegirHabitacion(this);
-            dialog.setVisible(true);
-            habitacionSeleccionada = dialog.getHabitacionSeleccionada();
-            if (habitacionSeleccionada != null) {
-                txtHabId.setText(String.valueOf(habitacionSeleccionada.getIdHabitacion()));
-            }
-        });
+    private void guardarReservacion() {
+        try {
+            Cliente c = clienteDAO.obtenerPorNumero(txtNumCliente.getText().trim());
+            int numHab = Integer.parseInt(txtNumHabitacion.getText().trim());
+            double horas = Double.parseDouble(txtHoras.getText().trim());
 
-        btnCancelar.addActionListener(e -> this.dispose());
-
-        btnGuardar.addActionListener(e -> {
-            String nom = txtNomCliente.getText().trim();
-            String num = txtNumCliente.getText().trim();
-            Date inicio = (Date) spInicio.getValue();
-            Date fin = (Date) spFin.getValue();
-
-            if (Validador.textoVacio(nom) || Validador.textoVacio(num) || habitacionSeleccionada == null) {
-                JOptionPane.showMessageDialog(this, "Datos incompletos. Verifique todos los campos.");
-                return;
-            }
-            if (!Validador.rangoFechasValido(inicio, fin)) {
-                JOptionPane.showMessageDialog(this, "La fecha de fin debe ser posterior a la de inicio.");
-                return;
-            }
-
-            Cliente c = clienteDAO.obtenerPorNumero(num);
-            if (c == null) {
-                c = new Cliente(0, nom, num);
-                if (!clienteDAO.insertar(c)) {
-                    JOptionPane.showMessageDialog(this, "Error al registrar el cliente.");
-                    return;
+            List<Habitacion> habs = habitacionDAO.obtenerTodos();
+            Habitacion targetHab = null;
+            for(Habitacion h : habs) {
+                if(Integer.parseInt(h.getNumHabitacion()) == numHab) {
+                    targetHab = h;
+                    break;
                 }
             }
 
-            long diff = fin.getTime() - inicio.getTime();
-            double horas = diff / (1000.0 * 60 * 60);
-            double total = horas * habitacionSeleccionada.getPrecioHora();
-
-            Reservacion r = new Reservacion(0, c.getIdCliente(),
-                    habitacionSeleccionada.getIdHabitacion(),
-                    new Date(), inicio, fin, horas, total, "Activa");
-
-            if (reservacionDAO.insertar(r)) {
-                habitacionDAO.cambiarEstado(habitacionSeleccionada.getIdHabitacion(), "Ocupada");
-
-                RegistroDAO registroDAO = new RegistroDAO();
-                Registro reg = new Registro(
-                    0,
-                    c.getIdCliente(),
-                    r.getIdReservacion(),
-                    habitacionSeleccionada.getIdHabitacion(),
-                    new java.sql.Time(new Date().getTime()),
-                    new Date()
-                );
-                registroDAO.insertar(reg);
-
-                padre.llenarTabla();
-                JOptionPane.showMessageDialog(this, "Reservación creada correctamente.");
-                this.dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al crear la reservación.");
+            if (c == null || targetHab == null) {
+                JOptionPane.showMessageDialog(this, "Huésped o Habitación no encontrados.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        });
+
+            if (!targetHab.getEstado().equalsIgnoreCase("Disponible")) {
+                JOptionPane.showMessageDialog(this, "La habitación seleccionada no se encuentra disponible.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            Date ahora = new Date();
+            long finMs = ahora.getTime() + (long)(horas * 3600000);
+            Date fechaFin = new Date(finMs);
+            double total = horas * targetHab.getPrecioHora();
+
+            // LÍNEA 128 CORREGIDA: Creación e inserción correcta de objeto Reservacion
+            Reservacion r = new Reservacion(0, c.getIdCliente(), targetHab.getIdHabitacion(), ahora, ahora, fechaFin, horas, total, "Activa");
+            
+            if (reservacionDAO.insertar(r)) {
+                habitacionDAO.cambiarEstado(targetHab.getIdHabitacion(), "Ocupada");
+                JOptionPane.showMessageDialog(this, "Reservación creada con éxito. Total: $" + total);
+                dispose();
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Verifique que los datos numéricos sean correctos.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private JTextField crearTextField() {
+        JTextField tf = new JTextField();
+        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(0xBD, 0xC3, 0xC7), 1),
+            BorderFactory.createEmptyBorder(6, 8, 6, 8)
+        ));
+        return tf;
     }
 }

@@ -10,64 +10,38 @@ package vista;
  */
 
 import dao.HabitacionDAO;
-import java.awt.*;
-import javax.swing.*;
 import modelo.Habitacion;
+import javax.swing.*;
+import java.awt.*;
 
 public class CrearHabitacion extends JDialog {
-    private JTextField txtNum, txtPrecio;
-    private JComboBox<String> cbTipo;
-    private JSpinner spPiso, spCapacidad;
-    private JButton btnGuardar, btnCancelar;
+    private JTextField txtNum, txtTipo, txtPiso, txtPrecio, txtCap;
     private HabitacionDAO habitacionDAO;
-    private Habitaciones padre;
 
-    public CrearHabitacion(Habitaciones parent) {
-        super(parent, "Nueva Habitación", true);
-        this.padre = parent;
+    public CrearHabitacion(Frame padre) {
+        super(padre, "Nueva Habitación", true);
         habitacionDAO = new HabitacionDAO();
-        setSize(320, 280);
-        setLocationRelativeTo(parent);
-        setLayout(new GridLayout(6, 2, 10, 10));
+        setSize(380, 420);
+        setLocationRelativeTo(padre);
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
-        add(new JLabel("  Número:")); txtNum = new JTextField(); add(txtNum);
-        add(new JLabel("  Tipo:")); cbTipo = new JComboBox<>(new String[]{"Individual", "Doble", "Triple"}); add(cbTipo);
-        add(new JLabel("  Piso:")); spPiso = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1)); add(spPiso);
-        add(new JLabel("  Precio/Hora:")); txtPrecio = new JTextField(); add(txtPrecio);
-        add(new JLabel("  Capacidad:")); spCapacidad = new JSpinner(new SpinnerNumberModel(1, 1, 6, 1)); add(spCapacidad);
-
-        btnGuardar = new JButton("Crear");
-        btnCancelar = new JButton("Cancelar");
-        btnGuardar.setBackground(Color.decode("#28a745"));
-        btnGuardar.setForeground(Color.WHITE);
-        btnCancelar.setBackground(Color.decode("#6c757d"));
-        btnCancelar.setForeground(Color.WHITE);
-
-        add(btnGuardar); add(btnCancelar);
-
-        btnCancelar.addActionListener(e -> this.dispose());
-
-        btnGuardar.addActionListener(e -> {
-            String num = txtNum.getText();
-            String precioStr = txtPrecio.getText();
-
-            if (Validador.textoVacio(num) || Validador.textoVacio(precioStr)) {
-                JOptionPane.showMessageDialog(this, "Campos obligatorios vacíos.");
-                return;
-            }
-
+        JPanel p = new JPanel(new GridLayout(10, 1, 5, 5));
+        p.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        p.add(new JLabel("Número Habitación:")); txtNum = new JTextField(); p.add(txtNum);
+        p.add(new JLabel("Tipo (Ej: Suite, Simple):")); txtTipo = new JTextField(); p.add(txtTipo);
+        p.add(new JLabel("Piso:")); txtPiso = new JTextField(); p.add(txtPiso);
+        p.add(new JLabel("Precio por Hora:")); txtPrecio = new JTextField(); p.add(txtPrecio);
+        p.add(new JLabel("Capacidad Máxima:")); txtCap = new JTextField(); p.add(txtCap);
+        
+        add(p);
+        JButton btn = new JButton("Guardar Habitación");
+        btn.addActionListener(e -> {
             try {
-                double precio = Double.parseDouble(precioStr);
-                Habitacion h = new Habitacion(0, num, cbTipo.getSelectedItem().toString(),
-                        (int) spPiso.getValue(), precio, (int) spCapacidad.getValue(), "Libre");
-                
-                if (habitacionDAO.insertar(h)) {
-                    padre.cargarHabitaciones();
-                    this.dispose();
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Formato de precio inválido.");
-            }
+                Habitacion h = new Habitacion(0, txtNum.getText(), txtTipo.getText(), Integer.parseInt(txtPiso.getText()), 
+                                              Double.parseDouble(txtPrecio.getText()), Integer.parseInt(txtCap.getText()), "Disponible");
+                if(habitacionDAO.insertar(h)) { dispose(); }
+            } catch(Exception ex) { JOptionPane.showMessageDialog(this, "Error de formatos numéricos."); }
         });
+        add(btn);
     }
 }

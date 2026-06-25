@@ -10,48 +10,40 @@ package vista;
  */
 
 import dao.ClienteDAO;
-import java.awt.*;
-import javax.swing.*;
 import modelo.Cliente;
+import javax.swing.*;
+import java.awt.*;
 
 public class CrearCliente extends JDialog {
-    private JTextField txtNom, txtTel;
-    private JButton btnGuardar, btnCancelar;
+    private JTextField txtNombre, txtDoc;
     private ClienteDAO clienteDAO;
-    private Clientes padre;
 
-    public CrearCliente(Clientes parent) {
-        super(parent, "Registrar Huésped", true);
-        this.padre = parent;
+    public CrearCliente(Frame padre) {
+        super(padre, "Registrar Huésped", true);
         clienteDAO = new ClienteDAO();
-        setSize(300, 180);
-        setLocationRelativeTo(parent);
-        setLayout(new GridLayout(3, 2, 10, 10));
+        setSize(400, 300);
+        setLocationRelativeTo(padre);
+        setLayout(new BorderLayout());
 
-        add(new JLabel("  Nombre:")); txtNom = new JTextField(); add(txtNom);
-        add(new JLabel("  Teléfono:")); txtTel = new JTextField(); add(txtTel);
+        JPanel form = new JPanel(new GridLayout(4, 1, 5, 5));
+        form.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        form.add(new JLabel("Nombre Completo:"));
+        txtNombre = new JTextField();
+        form.add(txtNombre);
+        form.add(new JLabel("Documento / Celular:"));
+        txtDoc = new JTextField();
+        form.add(txtDoc);
+        add(form, BorderLayout.CENTER);
 
-        btnGuardar = new JButton("Guardar");
-        btnCancelar = new JButton("Cancelar");
-        btnGuardar.setBackground(Color.decode("#28a745"));
-        btnGuardar.setForeground(Color.WHITE);
-
-        add(btnGuardar); add(btnCancelar);
-
-        btnCancelar.addActionListener(e -> this.dispose());
+        JButton btnGuardar = new JButton("Guardar");
         btnGuardar.addActionListener(e -> {
-            String nom = txtNom.getText();
-            String tel = txtTel.getText();
-
-            if (Validador.textoVacio(nom) || !Validador.formatoTelefono(tel)) {
-                JOptionPane.showMessageDialog(this, "Datos inválidos o teléfono fuera de formato.");
-                return;
-            }
-
-            if (clienteDAO.insertar(new Cliente(0, nom, tel))) {
-                padre.llenarTabla();
-                this.dispose();
+            if(txtNombre.getText().trim().isEmpty() || txtDoc.getText().trim().isEmpty()) return;
+            Cliente c = new Cliente(0, txtNombre.getText().trim(), txtDoc.getText().trim());
+            if(clienteDAO.insertar(c)) {
+                JOptionPane.showMessageDialog(this, "Registrado.");
+                dispose();
             }
         });
+        add(btnGuardar, BorderLayout.SOUTH);
     }
 }

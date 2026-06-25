@@ -10,50 +10,42 @@ package vista;
  */
 
 import dao.ClienteDAO;
-import java.awt.*;
-import javax.swing.*;
 import modelo.Cliente;
+import javax.swing.*;
+import java.awt.*;
 
 public class ModificarCliente extends JDialog {
-    private JTextField txtNom, txtTel;
-    private JButton btnGuardar, btnCancelar;
+    private JTextField txtNombre, txtDoc;
     private ClienteDAO clienteDAO;
     private Cliente clienteActual;
-    private Clientes padre;
 
-    public ModificarCliente(Clientes parent, Cliente c) {
-        super(parent, "Actualizar Datos Cliente", true);
-        this.padre = parent;
+    public ModificarCliente(Frame padre, Cliente c) {
+        super(padre, "Modificar Huésped", true);
         this.clienteActual = c;
-        clienteDAO = new ClienteDAO();
-        setSize(300, 180);
-        setLocationRelativeTo(parent);
-        setLayout(new GridLayout(3, 2, 10, 10));
+        this.clienteDAO = new ClienteDAO();
+        setSize(400, 300);
+        setLocationRelativeTo(padre);
+        setLayout(new BorderLayout());
 
-        add(new JLabel("  Nombre:")); txtNom = new JTextField(c.getNomCliente()); add(txtNom);
-        add(new JLabel("  Teléfono:")); txtTel = new JTextField(c.getNumCliente()); add(txtTel);
+        JPanel form = new JPanel(new GridLayout(4, 1, 5, 5));
+        form.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        form.add(new JLabel("Nombre Completo:"));
+        txtNombre = new JTextField(clienteActual.getNomCliente());
+        form.add(txtNombre);
+        form.add(new JLabel("Documento / Celular:"));
+        txtDoc = new JTextField(clienteActual.getNumCliente());
+        form.add(txtDoc);
+        add(form, BorderLayout.CENTER);
 
-        btnGuardar = new JButton("Actualizar");
-        btnCancelar = new JButton("Cancelar");
-        btnGuardar.setBackground(Color.decode("#fd7e14"));
-        btnGuardar.setForeground(Color.WHITE);
-
-        add(btnGuardar); add(btnCancelar);
-
-        btnCancelar.addActionListener(e -> this.dispose());
-        btnGuardar.addActionListener(e -> {
-            clienteActual.setNomCliente(txtNom.getText());
-            clienteActual.setNumCliente(txtTel.getText());
-
-            if (Validador.textoVacio(clienteActual.getNomCliente()) || !Validador.formatoTelefono(clienteActual.getNumCliente())) {
-                JOptionPane.showMessageDialog(this, "Verifique los datos.");
-                return;
-            }
-
-            if (clienteDAO.actualizar(clienteActual)) {
-                padre.llenarTabla();
-                this.dispose();
+        JButton btnActualizar = new JButton("Actualizar");
+        btnActualizar.addActionListener(e -> {
+            clienteActual.setNomCliente(txtNombre.getText().trim());
+            clienteActual.setNumCliente(txtDoc.getText().trim());
+            if(clienteDAO.actualizar(clienteActual)) {
+                JOptionPane.showMessageDialog(this, "Actualizado con éxito.");
+                dispose();
             }
         });
+        add(btnActualizar, BorderLayout.SOUTH);
     }
 }

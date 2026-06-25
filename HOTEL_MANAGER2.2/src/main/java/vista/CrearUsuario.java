@@ -10,70 +10,54 @@ package vista;
  */
 
 import dao.UsuarioDAO;
-import java.awt.*;
-import javax.swing.*;
 import modelo.Usuario;
+import javax.swing.*;
+import java.awt.*;
 
 public class CrearUsuario extends JDialog {
-    private JLabel lblNom, lblPass, lblRol;
-    private JTextField txtNom;
+    private JTextField txtUser;
     private JPasswordField txtPass;
-    private JRadioButton rbRec, rbAna;
-    private ButtonGroup grupoRol;
-    private JButton btnCrear, btnCancelar;
+    private JComboBox<String> cbRol;
     private UsuarioDAO usuarioDAO;
-    private ControlUsuarios padre;
 
-    public CrearUsuario(ControlUsuarios parent) {
-        super(parent, "Nuevo Usuario", true);
-        this.padre = parent;
+    public CrearUsuario(Frame padre) {
+        super(padre, "Registrar Colaborador - LUXE", true);
         usuarioDAO = new UsuarioDAO();
-        setSize(300, 250);
-        setLocationRelativeTo(parent);
-        setLayout(new GridLayout(5, 2, 10, 10));
+        setSize(380, 360);
+        setLocationRelativeTo(padre);
+        setLayout(new BorderLayout());
 
-        lblNom = new JLabel("  Nombre:");
-        lblPass = new JLabel("  Contraseña:");
-        lblRol = new JLabel("  Rol:");
+        JPanel p = new JPanel(new GridLayout(6, 1, 5, 5));
+        p.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));
+        
+        p.add(new JLabel("Nombre de Usuario (Login):"));
+        txtUser = new JTextField();
+        p.add(txtUser);
 
-        txtNom = new JTextField();
+        p.add(new JLabel("Contraseña Temporal:"));
         txtPass = new JPasswordField();
+        p.add(txtPass);
 
-        rbRec = new JRadioButton("Recepcionista", true);
-        rbAna = new JRadioButton("Analista");
-        grupoRol = new ButtonGroup();
-        grupoRol.add(rbRec); grupoRol.add(rbAna);
+        p.add(new JLabel("Rol del Sistema:"));
+        cbRol = new JComboBox<>(new String[]{"Administrador", "Recepcionista", "Analista"});
+        p.add(cbRol);
 
-        btnCrear = new JButton("Crear");
-        btnCancelar = new JButton("Cancelar");
+        add(p, BorderLayout.CENTER);
 
-        btnCrear.setBackground(Color.decode("#28a745"));
-        btnCrear.setForeground(Color.WHITE);
-        btnCancelar.setBackground(Color.decode("#6c757d"));
-        btnCancelar.setForeground(Color.WHITE);
-
-        add(lblNom); add(txtNom);
-        add(lblPass); add(txtPass);
-        add(lblRol); JPanel p = new JPanel(new GridLayout(2,1)); p.add(rbRec); p.add(rbAna); add(p);
-        add(btnCrear); add(btnCancelar);
-
-        btnCancelar.addActionListener(e -> this.dispose());
-
+        JButton btnCrear = new JButton("Dar de Alta");
         btnCrear.addActionListener(e -> {
-            String nombre = txtNom.getText();
-            String pass = new String(txtPass.getPassword());
-            String rol = rbRec.isSelected() ? "Recepcionista" : "Analista";
+            String u = txtUser.getText().trim();
+            String c = new String(txtPass.getPassword()).trim();
+            String r = (String) cbRol.getSelectedItem();
 
-            if (Validador.textoVacio(nombre) || Validador.textoVacio(pass)) {
-                JOptionPane.showMessageDialog(this, "Campos vacíos.");
-                return;
-            }
-
-            Usuario nuevo = new Usuario(0, nombre, pass, rol, 1);
-            if (usuarioDAO.insertar(nuevo)) {
-                padre.llenarTablas();
-                this.dispose();
+            if(!u.isEmpty() && !c.isEmpty()) {
+                Usuario nuevo = new Usuario(0, u, c, r, 1); // 1 indica primer_login activado para forzar cambio
+                if(usuarioDAO.insertar(nuevo)) {
+                    JOptionPane.showMessageDialog(this, "Usuario registrado de manera exitosa.");
+                    dispose();
+                }
             }
         });
+        add(btnCrear, BorderLayout.SOUTH);
     }
 }

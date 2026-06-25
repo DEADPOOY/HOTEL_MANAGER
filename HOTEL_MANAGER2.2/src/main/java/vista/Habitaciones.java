@@ -10,69 +10,107 @@ package vista;
  */
 
 import dao.HabitacionDAO;
+import modelo.Habitacion;
+import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-import javax.swing.*;
-import modelo.Habitacion;
 
-public class Habitaciones extends JFrame {
-    private JPanel panelGrilla;
-    private JButton btnCrear, btnModificar, btnRegresar;
+public class Habitaciones extends JPanel {
+
+    private JPanel gridPanel;
     private HabitacionDAO habitacionDAO;
 
     public Habitaciones() {
         habitacionDAO = new HabitacionDAO();
-        setTitle("Monitoreo de Habitaciones");
-        setSize(800, 500);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
 
-        panelGrilla = new JPanel(new GridLayout(0, 4, 15, 15));
-        panelGrilla.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setBackground(new Color(0xF7, 0xF5, 0xF0));
+        setLayout(new BorderLayout(20, 20));
+        setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
-        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnCrear = new JButton("Crear Habitación");
-        btnModificar = new JButton("Modificar Habitación");
-        btnRegresar = new JButton("Regresar");
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
 
-        btnCrear.setBackground(Color.decode("#28a745"));
-        btnCrear.setForeground(Color.WHITE);
-        btnModificar.setBackground(Color.decode("#fd7e14"));
-        btnModificar.setForeground(Color.WHITE);
-        btnRegresar.setBackground(Color.decode("#6c757d"));
-        btnRegresar.setForeground(Color.WHITE);
+        JButton btnNueva = new JButton("Nueva Habitación") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(new Color(0xC9, 0xA8, 0x4C));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        btnNueva.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnNueva.setForeground(Color.WHITE);
+        btnNueva.setContentAreaFilled(false);
+        btnNueva.setBorderPainted(false);
+        btnNueva.setPreferredSize(new Dimension(180, 38));
+        btnNueva.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnNueva.addActionListener(e -> {
+            CrearHabitacion dial = new CrearHabitacion((Frame) SwingUtilities.getWindowAncestor(this));
+            dial.setVisible(true);
+            refrescarGrid();
+        });
 
-        if (!Sesion.esAdmin()) {
-            btnCrear.setVisible(false);
-            btnModificar.setVisible(false);
-        }
+        topPanel.add(btnNueva, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
 
-        panelAcciones.add(btnCrear); panelAcciones.add(btnModificar); panelAcciones.add(btnRegresar);
-        add(new JScrollPane(panelGrilla), BorderLayout.CENTER);
-        add(panelAcciones, BorderLayout.SOUTH);
+        gridPanel = new JPanel(new GridLayout(0, 4, 20, 20));
+        gridPanel.setOpaque(false);
 
-        cargarHabitaciones();
+        JScrollPane scroll = new JScrollPane(gridPanel);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
 
-        btnRegresar.addActionListener(e -> this.dispose());
-        btnCrear.addActionListener(e -> new CrearHabitacion(this).setVisible(true));
-        btnModificar.addActionListener(e -> new ModificarHabitacion(this).setVisible(true));
+        add(scroll, BorderLayout.CENTER);
+
+        refrescarGrid();
     }
 
-    public void cargarHabitaciones() {
-        panelGrilla.removeAll();
+    public void refrescarGrid() {
+        gridPanel.removeAll();
         List<Habitacion> lista = habitacionDAO.obtenerTodos();
-        for (Habitacion h : lista) {
-            JButton btn = new JButton("<html><center><b>Hab: " + h.getNumHabitacion() + "</b><br>" + h.getTipo() + "<br>" + h.getEstado() + "</center></html>");
-            btn.setFont(new Font("SansSerif", Font.PLAIN, 12));
-            
-            if ("Libre".equals(h.getEstado())) btn.setBackground(Color.decode("#90EE90"));
-            else if ("Ocupada".equals(h.getEstado())) btn.setBackground(Color.decode("#FF6B6B"));
-            else btn.setBackground(Color.decode("#FFD700"));
 
-            panelGrilla.add(btn);
+        for (Habitacion h : lista) {
+            JPanel card = new JPanel(new BorderLayout(10, 10));
+            card.setBackground(Color.WHITE);
+            
+            // Variación de estado visual por color lateral
+            Color colorEstado = h.getEstado().equalsIgnoreCase("Disponible") ? new Color(0x2E, 0x7D, 0x32) : new Color(0xC6, 0x28, 0x28);
+            card.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 5, 0, 0, colorEstado),
+                    BorderFactory.createEmptyBorder(15, 15, 15, 15)
+            ));
+
+            JLabel lblNum = new JLabel("Habitación " + h.getNumHabitacion());
+            lblNum.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            lblNum.setForeground(new Color(0x1A, 0x27, 0x44));
+
+            JPanel datosPanel = new JPanel(new GridLayout(4, 1, 3, 3));
+            datosPanel.setOpaque(false);
+            datosPanel.add(new JLabel("Tipo: " + h.getTipo()));
+            datosPanel.add(new JLabel("Piso: " + h.getPiso()));
+            datosPanel.add(new JLabel("Capacidad: " + h.getNumCapacidad() + " pers."));
+            datosPanel.add(new JLabel("Precio/Hr: $" + h.getPrecioHora()));
+
+            JButton btnModificar = new JButton("Modificar");
+            btnModificar.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            btnModificar.setForeground(new Color(0x1A, 0x27, 0x44));
+            btnModificar.addActionListener(e -> {
+                ModificarHabitacion dialog = new ModificarHabitacion((Frame) SwingUtilities.getWindowAncestor(this), h);
+                dialog.setVisible(true);
+                refrescarGrid();
+            });
+
+            card.add(lblNum, BorderLayout.NORTH);
+            card.add(datosPanel, BorderLayout.CENTER);
+            card.add(btnModificar, BorderLayout.SOUTH);
+
+            gridPanel.add(card);
         }
-        panelGrilla.revalidate();
-        panelGrilla.repaint();
+
+        gridPanel.revalidate();
+        gridPanel.repaint();
     }
 }
