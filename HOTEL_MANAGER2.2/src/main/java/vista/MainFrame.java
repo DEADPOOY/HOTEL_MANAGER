@@ -70,7 +70,7 @@ public class MainFrame extends JFrame {
         panelContenido.add(clientes, "Clientes");
 
         // Agregar botones a la barra lateral según los Roles especificados
-        agregarBotonMenu(sidebar, "Dashboard", "Principal");
+        agregarBotonMenu(sidebar, "Dashboard", "Dashboard");
         agregarBotonMenu(sidebar, "Reservaciones", "Reservaciones");
         agregarBotonMenu(sidebar, "Habitaciones", "Habitaciones");
         agregarBotonMenu(sidebar, "Huéspedes", "Clientes");
@@ -114,7 +114,7 @@ public class MainFrame extends JFrame {
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xE2, 0xE8, 0xF0)));
         header.setBorder(BorderFactory.createCompoundBorder(header.getBorder(), BorderFactory.createEmptyBorder(0, 25, 0, 25)));
 
-        lblModuloActual = new JLabel("Principal");
+        lblModuloActual = new JLabel("Dashboard");
         lblModuloActual.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblModuloActual.setForeground(new Color(0x1A, 0x27, 0x44));
         header.add(lblModuloActual, BorderLayout.WEST);
