@@ -9,22 +9,22 @@ package vista;
  * @author deadpooy
  */
 
-import dao.ClienteDAO;
-import modelo.Cliente;
+import dao.UsuarioDAO;
+import modelo.Usuario;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class Clientes extends JPanel {
+public class Personal extends JPanel {
 
-    private JTable tablaClientes;
+    private JTable tablaUsuarios;
     private DefaultTableModel modeloTabla;
-    private ClienteDAO clienteDAO;
-    private List<Cliente> listaInterna;
+    private UsuarioDAO usuarioDAO;
+    private List<Usuario> listaInterna;
 
-    public Clientes() {
-        clienteDAO = new ClienteDAO();
+    public Personal() {
+        usuarioDAO = new UsuarioDAO();
         setBackground(new Color(0xF7, 0xF5, 0xF0));
         setLayout(new BorderLayout(20, 20));
         setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
@@ -36,37 +36,35 @@ public class Clientes extends JPanel {
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
 
-        // Columnas limpias sin ID Cliente expuesto
-        String[] columnas = {"N°", "Nombre Completo", "Teléfono"};
+        String[] columnas = {"N°", "Nombre de Usuario", "Rol de Acceso", "Estado Operativo"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        tablaClientes = new JTable(modeloTabla);
-        tablaClientes.setRowHeight(30);
-        tablaClientes.getTableHeader().setReorderingAllowed(false); // Bloqueado
-        tablaClientes.getTableHeader().setBackground(new Color(0x1A, 0x27, 0x44));
-        tablaClientes.getTableHeader().setForeground(Color.WHITE);
+        tablaUsuarios = new JTable(modeloTabla);
+        tablaUsuarios.setRowHeight(30);
+        tablaUsuarios.getTableHeader().setReorderingAllowed(false); // Bloqueado
+        tablaUsuarios.getTableHeader().setBackground(new Color(0x1A, 0x27, 0x44));
+        tablaUsuarios.getTableHeader().setForeground(Color.WHITE);
 
-        JScrollPane scroll = new JScrollPane(tablaClientes);
+        JScrollPane scroll = new JScrollPane(tablaUsuarios);
         mainCard.add(scroll, BorderLayout.CENTER);
         add(mainCard, BorderLayout.CENTER);
 
-        cargarClientes();
+        cargarUsuarios();
     }
 
-    private void cargarClientes() {
+    private void cargarUsuarios() {
         modeloTabla.setRowCount(0);
-        
-        listaInterna = clienteDAO.obtenerTodos(); 
-        
+        listaInterna = usuarioDAO.obtenerTodos(); 
         int index = 1;
-        for (Cliente c : listaInterna) {
+        for (Usuario u : listaInterna) {
             Object[] fila = {
                 index,
-                c.getNomCliente(),  
-                c.getNumCliente()
+                u.getIdUsuario(), 
+                u.getRol(),
+                u.getPrimerLogin()
             };
             modeloTabla.addRow(fila);
             index++;

@@ -41,4 +41,9 @@ public class Habitacion {
     public void setNumCapacidad(int numCapacidad) { this.numCapacidad = numCapacidad; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+    
+    @Override
+    public String toString() {
+        return "Hab. " + this.numHabitacion + " (" + this.tipo + ")";
+    }
 }

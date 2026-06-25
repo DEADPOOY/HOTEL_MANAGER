@@ -15,40 +15,54 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ModificarHabitacion extends JDialog {
-    private JTextField txtTipo, txtPiso, txtPrecio, txtCap;
+
     private JComboBox<String> cbEstado;
+    private JButton btnGuardar, btnCancelar;
     private HabitacionDAO habitacionDAO;
-    private Habitacion habActual;
+    private Habitacion habitacionActual;
 
-    public ModificarHabitacion(Frame padre, Habitacion h) {
-        super(padre, "Modificar Habitación", true);
-        this.habActual = h;
+    public ModificarHabitacion(Frame parent, Habitacion h) {
+        super(parent, "Gestionar Habitación " + h.getNumHabitacion(), true);
+        this.habitacionActual = h;
         this.habitacionDAO = new HabitacionDAO();
-        setSize(380, 420);
-        setLocationRelativeTo(padre);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
-        JPanel p = new JPanel(new GridLayout(10, 1, 5, 5));
-        p.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-        p.add(new JLabel("Tipo:")); txtTipo = new JTextField(habActual.getTipo()); p.add(txtTipo);
-        p.add(new JLabel("Piso:")); txtPiso = new JTextField(String.valueOf(habActual.getPiso())); p.add(txtPiso);
-        p.add(new JLabel("Precio por Hora:")); txtPrecio = new JTextField(String.valueOf(habActual.getPrecioHora())); p.add(txtPrecio);
-        p.add(new JLabel("Capacidad:")); txtCap = new JTextField(String.valueOf(habActual.getNumCapacidad())); p.add(txtCap);
-        p.add(new JLabel("Estado actual:"));
-        cbEstado = new JComboBox<>(new String[]{"Disponible", "Ocupada", "Mantenimiento"});
-        cbEstado.setSelectedItem(habActual.getEstado());
-        p.add(cbEstado);
+        setSize(350, 200);
+        setLocationRelativeTo(parent);
+        setLayout(new BorderLayout(15, 15));
+        ((JPanel)getContentPane()).setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        add(p);
-        JButton btn = new JButton("Actualizar Datos");
-        btn.addActionListener(e -> {
-            habActual.setTipo(txtTipo.getText());
-            habActual.setPiso(Integer.parseInt(txtPiso.getText()));
-            habActual.setPrecioHora(Double.parseDouble(txtPrecio.getText().trim()));
-            habActual.setNumCapacidad(Integer.parseInt(txtCap.getText()));
-            habActual.setEstado((String)cbEstado.getSelectedItem());
-            if(habitacionDAO.actualizar(habActual)) { dispose(); }
+        JPanel central = new JPanel(new GridLayout(2, 2, 10, 10));
+        central.add(new JLabel("Habitación:"));
+        central.add(new JLabel(h.getNumHabitacion() + " (" + h.getTipo() + ")"));
+        
+        central.add(new JLabel("Estado Actual:"));
+        
+        // Estados que usa tu BD actual: Disponible, Ocupada, Limpieza
+        cbEstado = new JComboBox<>(new String[]{"Disponible", "Ocupada", "Limpieza"});
+        cbEstado.setSelectedItem(h.getEstado() != null && h.getEstado().equalsIgnoreCase("Libre") ? "Disponible" : h.getEstado());
+        central.add(cbEstado);
+
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnGuardar = new JButton("Actualizar");
+        btnCancelar = new JButton("Cancelar");
+
+        btnGuardar.addActionListener(e -> {
+            String nuevoEstado = cbEstado.getSelectedItem().toString();
+            // Llama correctamente a HabitacionDAO
+            boolean exito = habitacionDAO.actualizarEstadoManual(habitacionActual.getIdHabitacion(), nuevoEstado);
+            if (exito) {
+                JOptionPane.showMessageDialog(this, "Estado actualizado con éxito.");
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al actualizar en la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         });
-        add(btn);
+
+        btnCancelar.addActionListener(e -> dispose());
+        botones.add(btnCancelar);
+        botones.add(btnGuardar);
+
+        add(central, BorderLayout.CENTER);
+        add(botones, BorderLayout.SOUTH);
     }
 }

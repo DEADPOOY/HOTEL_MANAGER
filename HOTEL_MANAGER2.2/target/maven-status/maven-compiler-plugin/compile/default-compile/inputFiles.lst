@@ -4,6 +4,7 @@
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/Clientes.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/modelo/Registro.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/CrearCliente.java
+/home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/Personal.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/ModificarCliente.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/DashboardPanel.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/PantallaInicio.java
@@ -16,6 +17,7 @@
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/conexion/Conexion.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/modelo/Reservacion.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/Reservaciones.java
+/home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/ReportesPanel.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/modelo/Cliente.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/dao/RegistroDAO.java
 /home/deadpooy/Documents/HOTEL_MANAGER/HOTEL_MANAGER2.2/src/main/java/vista/CrearUsuario.java

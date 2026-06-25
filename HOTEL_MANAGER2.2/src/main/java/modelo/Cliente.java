@@ -26,4 +26,9 @@ public class Cliente {
     public void setNomCliente(String nomCliente) { this.nomCliente = nomCliente; }
     public String getNumCliente() { return numCliente; }
     public void setNumCliente(String numCliente) { this.numCliente = numCliente; }
+    
+    @Override
+    public String toString() {
+    return this.nomCliente;
+    }
 }

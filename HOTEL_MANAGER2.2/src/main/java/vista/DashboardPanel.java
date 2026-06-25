@@ -35,7 +35,8 @@ public class DashboardPanel extends JPanel {
         int disponibles = habitacionDAO.obtenerPorEstado("Disponible").size();
         int ocupadas = habitacionDAO.obtenerPorEstado("Ocupada").size();
         
-        int reservacionesActivas = reservacionDAO.obtenerPorEstado("Activa").size();
+        // CORRECCIÓN DEFINITIVA LÍNEA 38: Usar el método unificado con la nueva vista limpia
+        int reservacionesActivas = reservacionDAO.obtenerVistaTabla("Activa").size();
 
         metricsPanel.add(crearCardMetrica("Habitaciones Totales", String.valueOf(totalHabitaciones), new Color(0x1A, 0x27, 0x44)));
         metricsPanel.add(crearCardMetrica("Disponibles", String.valueOf(disponibles), new Color(0x2E, 0x7D, 0x32))); 
@@ -60,7 +61,7 @@ public class DashboardPanel extends JPanel {
         lblSeccion.setForeground(new Color(0x1A, 0x27, 0x44));
         mainCard.add(lblSeccion, BorderLayout.NORTH);
 
-        JTextArea txtWelcome = new JTextArea("\nBienvenido al Sistema de Gestión Hotelera.\n\n"
+        JTextArea txtWelcome = new JTextArea("\nBienvenido al Sistema de Gestión Hotelera LUXE.\n\n"
                 + "Use la barra de navegación lateral izquierda para acceder a los diferentes módulos operativos de acuerdo con su rol asignado en el sistema.\n\n"
                 + "Monitoree el estado de las habitaciones en tiempo real desde el menú 'Habitaciones' o procese ingresos y egresos de huéspedes de forma automatizada.");
         txtWelcome.setFont(new Font("Segoe UI", Font.PLAIN, 14));

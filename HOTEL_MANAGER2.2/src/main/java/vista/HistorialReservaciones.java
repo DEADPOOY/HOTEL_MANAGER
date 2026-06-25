@@ -10,7 +10,6 @@ package vista;
  */
 
 import dao.ReservacionDAO;
-import modelo.Reservacion;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -56,7 +55,7 @@ public class HistorialReservaciones extends JPanel {
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
 
-        String[] columnas = {"ID", "ID Cliente", "ID Habitación", "Check-In", "Check-Out", "Horas", "Monto Total", "Estado"};
+        String[] columnas = {"ID", "Huésped", "N° Habitación", "Tipo", "Check-In", "Check-Out", "Horas", "Monto Total", "Estado"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -77,25 +76,15 @@ public class HistorialReservaciones extends JPanel {
 
     private void cargarHistorialCompleto() {
         modeloTabla.setRowCount(0);
-        List<Reservacion> lista = reservacionDAO.obtenerTodos();
+        List<String[]> lista = reservacionDAO.obtenerReservacionesDetalladas();
         double ingresosAcumulados = 0;
 
-        for (Reservacion r : lista) {
-            Object[] fila = {
-                r.getIdReservacion(),
-                r.getIdCliente(),
-                r.getIdHabitacion(),
-                r.getFechaInicio(),
-                r.getFechaFin(),
-                r.getPeriodo(),
-                r.getPrecioTotal(),
-                r.getEstado()
-            };
+        for (String[] fila : lista) {
             modeloTabla.addRow(fila);
-            
-            if (r.getEstado().equalsIgnoreCase("Activa") || r.getEstado().equalsIgnoreCase("Finalizada")) {
-                ingresosAcumulados += r.getPrecioTotal();
-            }
+            try {
+                double monto = Double.parseDouble(fila[7]);
+                ingresosAcumulados += monto;
+            } catch(Exception e) {}
         }
 
         lblTotalIngresos.setText("Ingresos Brutos Acumulados: $" + ingresosAcumulados);

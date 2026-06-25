@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package vista;
 
 /**
@@ -19,10 +15,10 @@ public class Habitaciones extends JPanel {
 
     private JPanel gridPanel;
     private HabitacionDAO habitacionDAO;
-
+    
     public Habitaciones() {
         habitacionDAO = new HabitacionDAO();
-
+        
         setBackground(new Color(0xF7, 0xF5, 0xF0));
         setLayout(new BorderLayout(20, 20));
         setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
@@ -76,8 +72,19 @@ public class Habitaciones extends JPanel {
             JPanel card = new JPanel(new BorderLayout(10, 10));
             card.setBackground(Color.WHITE);
             
-            // Variación de estado visual por color lateral
-            Color colorEstado = h.getEstado().equalsIgnoreCase("Disponible") ? new Color(0x2E, 0x7D, 0x32) : new Color(0xC6, 0x28, 0x28);
+            // ASIGNACIÓN DE COLORES SEGÚN TU ENUM DE BASE DE DATOS
+            Color colorEstado;
+            String estadoActual = h.getEstado();
+
+            if (estadoActual.equalsIgnoreCase("Limpieza") || estadoActual.equalsIgnoreCase("Mantenimiento")) {
+                colorEstado = new Color(0xF3, 0x9C, 0x12); // Amarillo Naranja de Advertencia
+                card.setBackground(new Color(0xFF, 0xFA, 0xE6)); // Fondo sutilmente amarillo
+            } else if (estadoActual.equalsIgnoreCase("Ocupada")) {
+                colorEstado = new Color(0xC6, 0x28, 0x28); // Rojo
+            } else { // 'Libre'
+                colorEstado = new Color(0x2E, 0x7D, 0x32); // Verde
+            }
+
             card.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 5, 0, 0, colorEstado),
                     BorderFactory.createEmptyBorder(15, 15, 15, 15)
@@ -87,14 +94,20 @@ public class Habitaciones extends JPanel {
             lblNum.setFont(new Font("Segoe UI", Font.BOLD, 16));
             lblNum.setForeground(new Color(0x1A, 0x27, 0x44));
 
-            JPanel datosPanel = new JPanel(new GridLayout(4, 1, 3, 3));
+            JPanel datosPanel = new JPanel(new GridLayout(5, 1, 3, 3));
             datosPanel.setOpaque(false);
             datosPanel.add(new JLabel("Tipo: " + h.getTipo()));
             datosPanel.add(new JLabel("Piso: " + h.getPiso()));
             datosPanel.add(new JLabel("Capacidad: " + h.getNumCapacidad() + " pers."));
             datosPanel.add(new JLabel("Precio/Hr: $" + h.getPrecioHora()));
+            
+            // Etiqueta visual del estado de la habitación
+            JLabel lblEstado = new JLabel("Estado: " + (estadoActual.equalsIgnoreCase("Limpieza") ? "MANTENIMIENTO" : estadoActual.toUpperCase()));
+            lblEstado.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            lblEstado.setForeground(colorEstado);
+            datosPanel.add(lblEstado);
 
-            JButton btnModificar = new JButton("Modificar");
+            JButton btnModificar = new JButton("Gestionar");
             btnModificar.setFont(new Font("Segoe UI", Font.BOLD, 12));
             btnModificar.setForeground(new Color(0x1A, 0x27, 0x44));
             btnModificar.addActionListener(e -> {

@@ -99,15 +99,33 @@ public class HabitacionDAO {
         return lista;
     }
 
-    public boolean cambiarEstado(int id, String estado) {
-        String sql = "UPDATE habitacion SET estado = ? WHERE id_habitacion = ?";
-        try (PreparedStatement ps = Conexion.getInstancia().prepareStatement(sql)) {
-            ps.setString(1, estado);
-            ps.setInt(2, id);
+    public boolean cambiarEstado(int idHabitacion, String estado) {
+    String sql = "UPDATE habitacion SET estado = ? WHERE id_habitacion = ?";
+        try (Connection con = Conexion.getInstancia();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, estado.trim()); 
+            ps.setInt(2, idHabitacion);
+
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
+            System.out.println("Error crítico al cambiar estado: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
+    
+    public boolean actualizarEstadoManual(int idHabitacion, String nuevoEstado) {
+        String sql = "UPDATE habitacion SET estado = ? WHERE id_habitacion = ?";
+        try (java.sql.Connection con = conexion.Conexion.getInstancia();
+             java.sql.PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idHabitacion);
+            return ps.executeUpdate() > 0;
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
 }

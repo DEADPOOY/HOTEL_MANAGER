@@ -1,4 +1,3 @@
-CREATE DATABASE IF NOT EXISTS hotel_manager;
 USE hotel_manager;
 
 CREATE TABLE usuario (
@@ -53,3 +52,25 @@ CREATE TABLE registro (
 
 INSERT INTO usuario (nombre, contrasena, rol, primer_login) 
 VALUES ('admin', SHA2('holamundito',256), 'Administrador', 1);
+
+ALTER TABLE habitacion
+MODIFY COLUMN estado VARCHAR(50) NOT NULL DEFAULT 'Disponible';
+
+ALTER TABLE reservacion
+MODIFY COLUMN estado VARCHAR(50) NOT NULL DEFAULT 'Activa';
+
+UPDATE habitacion
+SET estado = 'Disponible'
+WHERE estado IS NULL OR estado = '' OR estado = 'Libre';
+
+UPDATE habitacion h
+JOIN reservacion r ON h.id_habitacion = r.id_habitacion
+SET h.estado = 'Ocupada'
+WHERE r.estado = 'Activa';
+
+UPDATE habitacion h
+LEFT JOIN reservacion r
+  ON h.id_habitacion = r.id_habitacion AND r.estado = 'Activa'
+SET h.estado = 'Disponible'
+WHERE r.id_reservacion IS NULL
+  AND h.estado NOT IN ('Limpieza', 'Mantenimiento');

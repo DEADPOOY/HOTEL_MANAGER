@@ -10,7 +10,6 @@ package vista;
  */
 
 import dao.ReservacionDAO;
-import modelo.Reservacion;
 import modelo.Usuario;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,16 +21,32 @@ public class Reservaciones extends JPanel {
     private JTable tablaReservas;
     private DefaultTableModel modeloTabla;
     private ReservacionDAO reservacionDAO;
-    private Usuario usuarioActual;
+    private List<String[]> registrosActuales;
 
     public Reservaciones(Usuario usuario) {
-        this.usuarioActual = usuario;
+        // 1. Inicializar el DAO e interfaz básica
         this.reservacionDAO = new ReservacionDAO();
 
         setBackground(new Color(0xF7, 0xF5, 0xF0));
         setLayout(new BorderLayout(20, 20));
         setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
+        // 2. CONSTRUIR EL MODELO Y LAS COLUMNAS PRIMERO (Crítico para evitar NullPointerException)
+        String[] columnas = {"N°", "Huésped", "Habitación", "Tipo", "Inicio", "Fin", "Horas", "Total", "Estado"};
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+
+        tablaReservas = new JTable(modeloTabla);
+        tablaReservas.setRowHeight(30);
+        tablaReservas.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tablaReservas.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tablaReservas.getTableHeader().setBackground(new Color(0x1A, 0x27, 0x44));
+        tablaReservas.getTableHeader().setForeground(Color.WHITE);
+        tablaReservas.getTableHeader().setReorderingAllowed(false);
+
+        // 3. Crear paneles de la interfaz (Superior)
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
@@ -44,6 +59,7 @@ public class Reservaciones extends JPanel {
         topPanel.add(btnNueva, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
+        // 4. Panel central contenedor de la tabla
         JPanel tableCard = new JPanel(new BorderLayout());
         tableCard.setBackground(Color.WHITE);
         tableCard.setBorder(BorderFactory.createCompoundBorder(
@@ -51,21 +67,10 @@ public class Reservaciones extends JPanel {
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
 
-        String[] columnas = {"ID", "ID Cliente", "ID Habitación", "Inicio", "Fin", "Periodo (Hrs)", "Precio Total", "Estado"};
-        modeloTabla = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-
-        tablaReservas = new JTable(modeloTabla);
-        tablaReservas.setRowHeight(30);
-        tablaReservas.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tablaReservas.getTableHeader().setBackground(new Color(0x1A, 0x27, 0x44));
-        tablaReservas.getTableHeader().setForeground(Color.WHITE);
-
         JScrollPane scroll = new JScrollPane(tablaReservas);
         tableCard.add(scroll, BorderLayout.CENTER);
 
+        // 5. Panel inferior con botones de acción
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         bottomPanel.setOpaque(false);
 
@@ -76,38 +81,44 @@ public class Reservaciones extends JPanel {
         tableCard.add(bottomPanel, BorderLayout.SOUTH);
         add(tableCard, BorderLayout.CENTER);
 
+        // 6. LLAMADA CRÍTICA AL FINAL: Todo lo visual ya existe, ahora es 100% seguro cargar datos
         cargarDatos();
     }
 
     public void cargarDatos() {
-        modeloTabla.setRowCount(0);
-        List<Reservacion> lista = reservacionDAO.obtenerPorEstado("Activa");
-        for (Reservacion r : lista) {
-            Object[] fila = {
-                r.getIdReservacion(),
-                r.getIdCliente(),
-                r.getIdHabitacion(),
-                r.getFechaInicio(),
-                r.getFechaFin(),
-                r.getPeriodo(),
-                r.getPrecioTotal(),
-                r.getEstado()
-            };
-            modeloTabla.addRow(fila);
+        // Validación de seguridad para que la app no colapse si se invoca antes de tiempo
+        if (modeloTabla == null) {
+            return;
         }
+
+        modeloTabla.setRowCount(0);
+        registrosActuales = reservacionDAO.obtenerVistaTabla("Activa");
+        
+        if (registrosActuales != null) {
+            for (String[] fila : registrosActuales) {
+                Object[] filaVisual = {fila[0], fila[1], fila[2], fila[3], fila[4], fila[5], fila[6], fila[7], fila[8]};
+                modeloTabla.addRow(filaVisual);
+            }
+        }
+        
+        revalidate();
+        repaint();
     }
 
     private void cancelarReserva() {
-        int fila = tablaReservas.getSelectedRow();
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione una reservación.", "Aviso", JOptionPane.WARNING_MESSAGE);
+        int filaSeleccionada = tablaReservas.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione una reservación de la lista.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int id = Integer.parseInt(modeloTabla.getValueAt(fila, 0).toString());
-        int conf = JOptionPane.showConfirmDialog(this, "¿Seguro de cancelar la reserva ID: " + id + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        
+        int idReal = Integer.parseInt(registrosActuales.get(filaSeleccionada)[9]);
+        String huesped = modeloTabla.getValueAt(filaSeleccionada, 1).toString();
+        
+        int conf = JOptionPane.showConfirmDialog(this, "¿Seguro de cancelar la reservación de " + huesped + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (conf == JOptionPane.YES_OPTION) {
-            if (reservacionDAO.cancelar(id)) {
-                JOptionPane.showMessageDialog(this, "Reservación cancelada.");
+            if (reservacionDAO.cancelar(idReal)) {
+                JOptionPane.showMessageDialog(this, "Reservación cancelada correctamente.");
                 cargarDatos();
             }
         }

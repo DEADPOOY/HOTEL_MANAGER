@@ -22,7 +22,10 @@ import java.util.List;
 
 public class CrearReservacion extends JDialog {
 
-    private JTextField txtNumCliente, txtNumHabitacion, txtHoras;
+    private JComboBox<Cliente> comboClientes;
+    private JComboBox<Habitacion> comboHabitaciones;
+    private JTextField txtHoras;
+    
     private ReservacionDAO reservacionDAO;
     private ClienteDAO clienteDAO;
     private HabitacionDAO habitacionDAO;
@@ -33,7 +36,7 @@ public class CrearReservacion extends JDialog {
         clienteDAO = new ClienteDAO();
         habitacionDAO = new HabitacionDAO();
 
-        setSize(450, 400);
+        setSize(480, 420);
         setLocationRelativeTo(padre);
         setResizable(false);
         getContentPane().setBackground(new Color(0xF7, 0xF5, 0xF0));
@@ -55,22 +58,28 @@ public class CrearReservacion extends JDialog {
         gbc.insets = new Insets(8, 0, 8, 0);
         gbc.weightx = 1.0;
 
+        // 1. Desplegable de Clientes
         gbc.gridx = 0; gbc.gridy = 0;
-        form.add(new JLabel("Número / Doc. del Huésped:"), gbc);
+        form.add(new JLabel("Seleccione el Huésped:"), gbc);
         gbc.gridy = 1;
-        txtNumCliente = crearTextField();
-        form.add(txtNumCliente, gbc);
+        comboClientes = new JComboBox<>();
+        llenarComboClientes();
+        form.add(comboClientes, gbc);
 
+        // 2. Desplegable de Habitaciones
         gbc.gridy = 2;
-        form.add(new JLabel("Número de Habitación:"), gbc);
+        form.add(new JLabel("Seleccione la Habitación Disponible:"), gbc);
         gbc.gridy = 3;
-        txtNumHabitacion = crearTextField();
-        form.add(txtNumHabitacion, gbc);
+        comboHabitaciones = new JComboBox<>();
+        llenarComboHabitaciones();
+        form.add(comboHabitaciones, gbc);
 
+        // 3. Campo de Horas
         gbc.gridy = 4;
         form.add(new JLabel("Periodo de Estadía (Horas):"), gbc);
         gbc.gridy = 5;
-        txtHoras = crearTextField();
+        txtHoras = new JTextField();
+        txtHoras.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         form.add(txtHoras, gbc);
 
         add(form, BorderLayout.CENTER);
@@ -90,56 +99,65 @@ public class CrearReservacion extends JDialog {
         add(acciones, BorderLayout.SOUTH);
     }
 
-    private void guardarReservacion() {
+    private void llenarComboClientes() {
         try {
-            Cliente c = clienteDAO.obtenerPorNumero(txtNumCliente.getText().trim());
-            int numHab = Integer.parseInt(txtNumHabitacion.getText().trim());
-            double horas = Double.parseDouble(txtHoras.getText().trim());
-
-            List<Habitacion> habs = habitacionDAO.obtenerTodos();
-            Habitacion targetHab = null;
-            for(Habitacion h : habs) {
-                if(Integer.parseInt(h.getNumHabitacion()) == numHab) {
-                    targetHab = h;
-                    break;
-                }
+            List<Cliente> clientes = clienteDAO.obtenerTodos();
+            for (Cliente c : clientes) {
+                comboClientes.addItem(c);
             }
-
-            if (c == null || targetHab == null) {
-                JOptionPane.showMessageDialog(this, "Huésped o Habitación no encontrados.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            if (!targetHab.getEstado().equalsIgnoreCase("Disponible")) {
-                JOptionPane.showMessageDialog(this, "La habitación seleccionada no se encuentra disponible.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            Date ahora = new Date();
-            long finMs = ahora.getTime() + (long)(horas * 3600000);
-            Date fechaFin = new Date(finMs);
-            double total = horas * targetHab.getPrecioHora();
-
-            // LÍNEA 128 CORREGIDA: Creación e inserción correcta de objeto Reservacion
-            Reservacion r = new Reservacion(0, c.getIdCliente(), targetHab.getIdHabitacion(), ahora, ahora, fechaFin, horas, total, "Activa");
-            
-            if (reservacionDAO.insertar(r)) {
-                habitacionDAO.cambiarEstado(targetHab.getIdHabitacion(), "Ocupada");
-                JOptionPane.showMessageDialog(this, "Reservación creada con éxito. Total: $" + total);
-                dispose();
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Verifique que los datos numéricos sean correctos.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch(Exception e) {
+            System.out.println("Error al cargar clientes en combo");
         }
     }
 
-    private JTextField crearTextField() {
-        JTextField tf = new JTextField();
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(0xBD, 0xC3, 0xC7), 1),
-            BorderFactory.createEmptyBorder(6, 8, 6, 8)
-        ));
-        return tf;
+    private void llenarComboHabitaciones() {
+        try {
+            List<Habitacion> habitaciones = habitacionDAO.obtenerPorEstado("Disponible");
+            for (Habitacion h : habitaciones) {
+                comboHabitaciones.addItem(h);
+            }
+        } catch(Exception e) {
+            System.out.println("Error al cargar habitaciones en combo");
+        }
+    }
+
+    private void guardarReservacion() {
+        try {
+            Cliente clienteSeleccionado = (Cliente) comboClientes.getSelectedItem();
+            Habitacion habSeleccionada = (Habitacion) comboHabitaciones.getSelectedItem();
+            
+            if (clienteSeleccionado == null || habSeleccionada == null) {
+                JOptionPane.showMessageDialog(this, "Debe seleccionar un huésped y una habitación válida.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String textoHoras = txtHoras.getText().trim();
+            if (textoHoras.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El campo de horas no puede estar vacío.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            double horas = Double.parseDouble(textoHoras);
+            Date ahora = new Date();
+            long finMs = ahora.getTime() + (long)(horas * 3600000);
+            Date fechaFin = new Date(finMs);
+            double total = horas * habSeleccionada.getPrecioHora();
+
+            Reservacion r = new Reservacion(0, clienteSeleccionado.getIdCliente(), habSeleccionada.getIdHabitacion(), ahora, ahora, fechaFin, horas, total, "Activa");
+            
+            if (reservacionDAO.insertar(r)) {
+                // Ajusta este método de tu HabitacionDAO si se llama diferente en tu proyecto (ej: actualizarEstado)
+                habitacionDAO.cambiarEstado(habSeleccionada.getIdHabitacion(), "Ocupada"); 
+                JOptionPane.showMessageDialog(this, "Reservación creada con éxito.\nMonto total a liquidar: $" + total);
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "La base de datos rechazó la inserción del registro.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Ingrese un valor numérico válido (ej: 12 o 4.5) en las horas.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            System.out.println("[CRITICAL] Error al guardar reservación: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 }
