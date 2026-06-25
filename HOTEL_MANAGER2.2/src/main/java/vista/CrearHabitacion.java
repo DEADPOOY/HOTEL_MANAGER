@@ -15,7 +15,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class CrearHabitacion extends JDialog {
-    private JTextField txtNum, txtTipo, txtPiso, txtPrecio, txtCap;
+    private JTextField txtNum, txtPiso, txtPrecio, txtCap;
+    private JComboBox<String> cbTipo;
     private HabitacionDAO habitacionDAO;
 
     public CrearHabitacion(Frame padre) {
@@ -27,21 +28,59 @@ public class CrearHabitacion extends JDialog {
 
         JPanel p = new JPanel(new GridLayout(10, 1, 5, 5));
         p.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-        p.add(new JLabel("Número Habitación:")); txtNum = new JTextField(); p.add(txtNum);
-        p.add(new JLabel("Tipo (Ej: Suite, Simple):")); txtTipo = new JTextField(); p.add(txtTipo);
-        p.add(new JLabel("Piso:")); txtPiso = new JTextField(); p.add(txtPiso);
-        p.add(new JLabel("Precio por Hora:")); txtPrecio = new JTextField(); p.add(txtPrecio);
-        p.add(new JLabel("Capacidad Máxima:")); txtCap = new JTextField(); p.add(txtCap);
-        
+        p.add(new JLabel("Número Habitación:"));
+        txtNum = new JTextField();
+        p.add(txtNum);
+        p.add(new JLabel("Tipo:"));
+        cbTipo = new JComboBox<>(new String[]{"Individual", "Doble", "Triple"});
+        p.add(cbTipo);
+        p.add(new JLabel("Piso:"));
+        txtPiso = new JTextField();
+        p.add(txtPiso);
+        p.add(new JLabel("Precio por Hora:"));
+        txtPrecio = new JTextField();
+        p.add(txtPrecio);
+        p.add(new JLabel("Capacidad Máxima:"));
+        txtCap = new JTextField();
+        p.add(txtCap);
+
         add(p);
         JButton btn = new JButton("Guardar Habitación");
-        btn.addActionListener(e -> {
-            try {
-                Habitacion h = new Habitacion(0, txtNum.getText(), txtTipo.getText(), Integer.parseInt(txtPiso.getText()), 
-                                              Double.parseDouble(txtPrecio.getText()), Integer.parseInt(txtCap.getText()), "Disponible");
-                if(habitacionDAO.insertar(h)) { dispose(); }
-            } catch(Exception ex) { JOptionPane.showMessageDialog(this, "Error de formatos numéricos."); }
-        });
+        btn.addActionListener(e -> guardarHabitacion());
         add(btn);
+    }
+
+    private void guardarHabitacion() {
+        String num = txtNum.getText().trim();
+        String tipo = cbTipo.getSelectedItem().toString();
+        String pisoTexto = txtPiso.getText().trim();
+        String precioTexto = txtPrecio.getText().trim();
+        String capTexto = txtCap.getText().trim();
+
+        if (num.isEmpty() || pisoTexto.isEmpty() || precioTexto.isEmpty() || capTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Complete todos los campos.", "Campos incompletos", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            int piso = Integer.parseInt(pisoTexto);
+            double precio = Double.parseDouble(precioTexto);
+            int capacidad = Integer.parseInt(capTexto);
+
+            if (piso < 0 || precio <= 0 || capacidad <= 0) {
+                JOptionPane.showMessageDialog(this, "Piso, precio y capacidad deben ser valores positivos.", "Datos inválidos", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            Habitacion h = new Habitacion(0, num, tipo, piso, precio, capacidad, "Disponible");
+            if (habitacionDAO.insertar(h)) {
+                JOptionPane.showMessageDialog(this, "Habitación registrada correctamente.");
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo guardar la habitación. Verifique que el número no esté duplicado y que la base de datos esté activa.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Piso, precio y capacidad deben ser valores numéricos válidos.", "Error de formato", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

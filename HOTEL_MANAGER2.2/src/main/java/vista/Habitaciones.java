@@ -26,29 +26,22 @@ public class Habitaciones extends JPanel {
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(false);
 
-        JButton btnNueva = new JButton("Nueva Habitación") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2d.setColor(new Color(0xC9, 0xA8, 0x4C));
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
-                super.paintComponent(g);
-            }
-        };
-        btnNueva.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnNueva.setForeground(Color.WHITE);
-        btnNueva.setContentAreaFilled(false);
-        btnNueva.setBorderPainted(false);
-        btnNueva.setPreferredSize(new Dimension(180, 38));
-        btnNueva.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JPanel accionesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        accionesPanel.setOpaque(false);
+
+        JButton btnRecargar = crearBotonAccion("Recargar", new Color(0x1A, 0x27, 0x44), 130);
+        btnRecargar.addActionListener(e -> refrescarGrid());
+
+        JButton btnNueva = crearBotonAccion("Nueva Habitación", new Color(0xC9, 0xA8, 0x4C), 180);
         btnNueva.addActionListener(e -> {
             CrearHabitacion dial = new CrearHabitacion((Frame) SwingUtilities.getWindowAncestor(this));
             dial.setVisible(true);
             refrescarGrid();
         });
 
-        topPanel.add(btnNueva, BorderLayout.EAST);
+        accionesPanel.add(btnRecargar);
+        accionesPanel.add(btnNueva);
+        topPanel.add(accionesPanel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
         gridPanel = new JPanel(new GridLayout(0, 4, 20, 20));
@@ -125,5 +118,25 @@ public class Habitaciones extends JPanel {
 
         gridPanel.revalidate();
         gridPanel.repaint();
+    }
+
+    private JButton crearBotonAccion(String texto, Color fondo, int ancho) {
+        JButton btn = new JButton(texto) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(fondo);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+            }
+        };
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setPreferredSize(new Dimension(ancho, 38));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 }

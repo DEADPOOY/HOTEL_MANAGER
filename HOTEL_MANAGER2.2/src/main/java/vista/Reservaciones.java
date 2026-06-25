@@ -81,7 +81,6 @@ public class Reservaciones extends JPanel {
         tableCard.add(bottomPanel, BorderLayout.SOUTH);
         add(tableCard, BorderLayout.CENTER);
 
-        // 6. LLAMADA CRÍTICA AL FINAL: Todo lo visual ya existe, ahora es 100% seguro cargar datos
         cargarDatos();
     }
 

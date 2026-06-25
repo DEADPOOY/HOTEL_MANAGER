@@ -58,35 +58,40 @@ public class MainFrame extends JFrame {
         panelContenido = new JPanel(cardLayout);
         panelContenido.setBackground(new Color(0xF7, 0xF5, 0xF0)); // Crema
 
-        // Inicializar paneles de la vista
-        DashboardPanel Principal = new DashboardPanel();
-        Reservaciones reservaciones = new Reservaciones(usuarioLogueado);
-        Habitaciones habitaciones = new Habitaciones();
-        Clientes clientes = new Clientes();
-
-        panelContenido.add(Principal, "Principal");
-        panelContenido.add(reservaciones, "Reservaciones");
-        panelContenido.add(habitaciones, "Habitaciones");
-        panelContenido.add(clientes, "Clientes");
-
-        // Agregar botones a la barra lateral según los Roles especificados
-        agregarBotonMenu(sidebar, "Principal", "Principal");
-        agregarBotonMenu(sidebar, "Reservaciones", "Reservaciones");
-        agregarBotonMenu(sidebar, "Habitaciones", "Habitaciones");
-        agregarBotonMenu(sidebar, "Huéspedes", "Clientes");
-
-        // Control de Accesos por Roles
         String rol = usuarioLogueado.getRol().toLowerCase();
-        if (rol.contains("admin") || rol.contains("administrador")) {
-            ControlUsuarios controlUsuarios = new ControlUsuarios();
-            panelContenido.add(controlUsuarios, "Usuarios");
-            agregarBotonMenu(sidebar, "Personal / Usuarios", "Usuarios");
-        }
-        
-        if (rol.contains("analista") || rol.contains("admin") || rol.contains("administrador")) {
+        boolean esAnalista = rol.contains("analista");
+        boolean esAdmin = rol.contains("admin") || rol.contains("administrador");
+
+        DashboardPanel principal = new DashboardPanel();
+        panelContenido.add(principal, "Principal");
+        agregarBotonMenu(sidebar, "Principal", "Principal");
+
+        if (esAnalista && !esAdmin) {
             HistorialReservaciones historial = new HistorialReservaciones();
             panelContenido.add(historial, "Reportes");
             agregarBotonMenu(sidebar, "Reportes / Historial", "Reportes");
+        } else {
+            Reservaciones reservaciones = new Reservaciones(usuarioLogueado);
+            Habitaciones habitaciones = new Habitaciones();
+            Clientes clientes = new Clientes();
+
+            panelContenido.add(reservaciones, "Reservaciones");
+            panelContenido.add(habitaciones, "Habitaciones");
+            panelContenido.add(clientes, "Clientes");
+
+            agregarBotonMenu(sidebar, "Reservaciones", "Reservaciones");
+            agregarBotonMenu(sidebar, "Habitaciones", "Habitaciones");
+            agregarBotonMenu(sidebar, "Huéspedes", "Clientes");
+
+            if (esAdmin) {
+                ControlUsuarios controlUsuarios = new ControlUsuarios();
+                panelContenido.add(controlUsuarios, "Usuarios");
+                agregarBotonMenu(sidebar, "Personal / Usuarios", "Usuarios");
+
+                HistorialReservaciones historial = new HistorialReservaciones();
+                panelContenido.add(historial, "Reportes");
+                agregarBotonMenu(sidebar, "Reportes / Historial", "Reportes");
+            }
         }
 
         sidebar.add(Box.createVerticalGlue());

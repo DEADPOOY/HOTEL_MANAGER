@@ -21,7 +21,7 @@ public class CrearUsuario extends JDialog {
     private UsuarioDAO usuarioDAO;
 
     public CrearUsuario(Frame padre) {
-        super(padre, "Registrar Colaborador - LUXE", true);
+        super(padre, "Registrar Colaborador ", true);
         usuarioDAO = new UsuarioDAO();
         setSize(380, 360);
         setLocationRelativeTo(padre);

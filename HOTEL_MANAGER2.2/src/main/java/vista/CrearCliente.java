@@ -30,18 +30,25 @@ public class CrearCliente extends JDialog {
         form.add(new JLabel("Nombre Completo:"));
         txtNombre = new JTextField();
         form.add(txtNombre);
-        form.add(new JLabel("Documento / Celular:"));
+        form.add(new JLabel("Celular:"));
         txtDoc = new JTextField();
         form.add(txtDoc);
         add(form, BorderLayout.CENTER);
 
         JButton btnGuardar = new JButton("Guardar");
         btnGuardar.addActionListener(e -> {
-            if(txtNombre.getText().trim().isEmpty() || txtDoc.getText().trim().isEmpty()) return;
-            Cliente c = new Cliente(0, txtNombre.getText().trim(), txtDoc.getText().trim());
-            if(clienteDAO.insertar(c)) {
-                JOptionPane.showMessageDialog(this, "Registrado.");
+            String nombre = txtNombre.getText().trim();
+            String celular = txtDoc.getText().trim();
+            if (nombre.isEmpty() || celular.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Complete todos los campos.", "Campos incompletos", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            Cliente c = new Cliente(0, nombre, celular);
+            if (clienteDAO.insertar(c)) {
+                JOptionPane.showMessageDialog(this, "Huésped registrado correctamente.");
                 dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo registrar el huésped. Verifique la conexión a la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
         add(btnGuardar, BorderLayout.SOUTH);
