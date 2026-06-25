@@ -59,18 +59,18 @@ public class MainFrame extends JFrame {
         panelContenido.setBackground(new Color(0xF7, 0xF5, 0xF0)); // Crema
 
         // Inicializar paneles de la vista
-        DashboardPanel dashboard = new DashboardPanel();
+        DashboardPanel Principal = new DashboardPanel();
         Reservaciones reservaciones = new Reservaciones(usuarioLogueado);
         Habitaciones habitaciones = new Habitaciones();
         Clientes clientes = new Clientes();
 
-        panelContenido.add(dashboard, "Dashboard");
+        panelContenido.add(Principal, "Principal");
         panelContenido.add(reservaciones, "Reservaciones");
         panelContenido.add(habitaciones, "Habitaciones");
         panelContenido.add(clientes, "Clientes");
 
         // Agregar botones a la barra lateral según los Roles especificados
-        agregarBotonMenu(sidebar, "Dashboard", "Dashboard");
+        agregarBotonMenu(sidebar, "Principal", "Principal");
         agregarBotonMenu(sidebar, "Reservaciones", "Reservaciones");
         agregarBotonMenu(sidebar, "Habitaciones", "Habitaciones");
         agregarBotonMenu(sidebar, "Huéspedes", "Clientes");
@@ -114,7 +114,7 @@ public class MainFrame extends JFrame {
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xE2, 0xE8, 0xF0)));
         header.setBorder(BorderFactory.createCompoundBorder(header.getBorder(), BorderFactory.createEmptyBorder(0, 25, 0, 25)));
 
-        lblModuloActual = new JLabel("Dashboard");
+        lblModuloActual = new JLabel("Principal");
         lblModuloActual.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblModuloActual.setForeground(new Color(0x1A, 0x27, 0x44));
         header.add(lblModuloActual, BorderLayout.WEST);
