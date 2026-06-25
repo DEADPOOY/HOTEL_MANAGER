@@ -47,7 +47,7 @@ public class PantallaInicio extends JFrame {
         gbc.gridy = 0;
         gbc.insets = new Insets(10, 10, 10, 10);
 
-        JLabel lblLogo = new JLabel("LUXE");
+        JLabel lblLogo = new JLabel("HOT-MAN");
         lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 52));
         lblLogo.setForeground(new Color(0xC9, 0xA8, 0x4C)); // Dorado acento
         centroPanel.add(lblLogo, gbc);

@@ -23,7 +23,7 @@ public class InicioSesion extends JFrame {
     public InicioSesion() {
         usuarioDAO = new UsuarioDAO();
         
-        setTitle("LUXE - Inicio de Sesión");
+        setTitle("HOT-MAN - Inicio de Sesión");
         setSize(420, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,7 +45,7 @@ public class InicioSesion extends JFrame {
         headerPanel.setPreferredSize(new Dimension(420, 120));
         headerPanel.setLayout(new GridBagLayout());
         
-        JLabel lblTitulo = new JLabel("LUXE");
+        JLabel lblTitulo = new JLabel("HOT-MAN");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 36));
         lblTitulo.setForeground(new Color(0xC9, 0xA8, 0x4C)); // Dorado
         headerPanel.add(lblTitulo);
