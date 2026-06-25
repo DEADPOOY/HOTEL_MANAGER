@@ -23,7 +23,7 @@ public class MainFrame extends JFrame {
     public MainFrame(Usuario usuario) {
         this.usuarioLogueado = usuario;
         
-        setTitle("LUXE Hotel Management - Bienvenido " + usuarioLogueado.getNombre());
+        setTitle("Hotel Management - Bienvenido " + usuarioLogueado.getNombre());
         setSize(1280, 760);
         setMinimumSize(new Dimension(1024, 680));
         setLocationRelativeTo(null);
@@ -46,7 +46,7 @@ public class MainFrame extends JFrame {
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
 
         // Logo en Sidebar
-        JLabel lblLogo = new JLabel("LUXE");
+        JLabel lblLogo = new JLabel("HOT-MAN");
         lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblLogo.setForeground(new Color(0xC9, 0xA8, 0x4C)); // Dorado
         lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
